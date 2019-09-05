@@ -1,3 +1,10 @@
+//! Potential design:
+//! The CLI tracks crowdfunding campaigns by storing relevant data in a `.crowdfund` file with the data being in json.
+//! This file can be passed around to allow for importing of campaigns, and when imported the CLI app automatically gets a user's public key from their unlocked wallet and then adds that to the json which it stores locally (adds it to the locally tracked campaigns). (Capaign tracking can be added manually as well)
+//! Once a campaign is tracked then a user can contribute to it, keep track of previous contributions, search for other people who have contributed, etc. 
+//! If the user is the owner of the project_pub_key, then they can withdraw once/if the campaign succeeds.
+//! If the user is the owner of backer_pub_key, then they can withdraw once/if the campaign fails.
+
 extern crate handlebars;
 #[macro_use]
 extern crate serde_json;
@@ -42,7 +49,7 @@ fn default_crowdfund_test_script() -> Option<String> {
     build_crowdfund_script(&backer_pub_key, &project_pub_key, &"50000".to_string(), &"500".to_string())
 }
 
-// Eventually get backer_pubkey from local node if wallet is unlocked
+// Eventually get backer_pubkey from local node if wallet is unlocked (requires node API key)
 pub fn main() {
     println!("Ergo Crowdfund CLI\n------------------");
     let args: Args = Docopt::new(USAGE)
@@ -54,3 +61,5 @@ pub fn main() {
        build_crowdfund_script(&args.arg_backer_pubkey, &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal);
     }
 }
+
+
