@@ -13,7 +13,7 @@ fn get_api_key_from_file() -> Option<String> {
     let mut file = File::open("api.key").ok()?;
     let mut st = String::new();
     file.read_to_string(&mut st).ok()?;
-    Some(st)
+    Some(st.trim().to_string())
 }
 
 /// Tries to get api key from `api.key` file, else asks the user to enter their api key and saves it to `api.key`
@@ -26,7 +26,7 @@ pub fn check_for_api_key() -> String {
         let mut input = String::new();
         if let Ok(_) = std::io::stdin().read_line(&mut input){
             println!("API key inputted: {}", input);
-            save_api_key_to_file(&input);
+            save_api_key_to_file(&input.trim().to_string());
         }
         else {
             panic!("Provided invalid input. Please relaunch the CLI app and try again with a valid API key.")
