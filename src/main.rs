@@ -9,8 +9,11 @@ extern crate handlebars;
 #[macro_use]
 extern crate serde_json;
 
-use handlebars::Handlebars;
+mod api_key;
+
+use api_key::*;
 use docopt::Docopt;
+use handlebars::Handlebars;
 use serde::{Deserialize};
 
 static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{project_pub}}\") \n val deadline = {{deadline}} \n val minToRaise = {{amount}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
@@ -55,6 +58,9 @@ impl Campaign {
             project_goal: goal
         } 
     }
+
+    // fn back_campaign(&self, amount: Int) -> BackedCampaign {
+    // }
 }
 
 
@@ -87,9 +93,12 @@ fn default_crowdfund_test_script() -> Option<String> {
 // Eventually get backer_pubkey from local node if wallet is unlocked (requires node API key)
 pub fn main() {
     println!("Ergo Crowdfund CLI\n------------------");
+
+    // Get basic values
     let args: Args = Docopt::new(USAGE)
     .and_then(|d| d.deserialize())
     .unwrap_or_else(|e| e.exit());
+    let api_key = check_for_api_key();
 
     // If contribute command
     if args.cmd_contribute {
