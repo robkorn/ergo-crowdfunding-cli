@@ -12,6 +12,34 @@ struct P2SAddress {
     address: String
 }
 
+/// Gets a list of all addresses from the local unlocked node wallet.
+pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
+    let endpoint = "http://0.0.0.0:9052/wallet/addresses";
+    let client = reqwest::Client::new();
+    let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
+    let mut res = client.get(endpoint)
+                .header("accept", "application/json")
+                .header("api_key", hapi_key)
+                .header(CONTENT_TYPE, "application/json")
+                .send()
+                .expect("Failed to send request to local node. Please make sure it is running on API port 9052.");
+
+
+    let mut addresses : Vec<String> = vec![];
+    for segment in res.text().expect("Failed to get addresses from wallet.").split("\""){
+        println!("{}", segment);
+        let seg = segment.trim();
+        if seg.chars().next().unwrap() == '9' {
+           addresses.push(seg.to_string()); 
+        }
+    }
+    if addresses.len() == 0 {
+        panic!("No addresses were found. Please make sure it is running on API port 9052 and your wallet is unlocked.");
+    }
+    println!("{:?}", addresses);
+    addresses
+}
+
 /// Get P2S Address for Backer to submit to for the Campaign
 pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &String) -> String {
     let endpoint = "http://0.0.0.0:9052/script/p2sAddress";

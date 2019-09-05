@@ -15,7 +15,7 @@ mod wallet_reqs;
 
 use api_key::{check_for_api_key};
 use campaign::*;
-use wallet_reqs::{get_p2s_address, send_wallet_payment};
+use wallet_reqs::{get_p2s_address, send_wallet_payment, get_wallet_addresses};
 use docopt::Docopt;
 use serde::{Deserialize};
 
@@ -44,9 +44,9 @@ pub fn main() {
 
     // If contribute command
     if args.cmd_contribute {
-       let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal);
-       get_p2s_address(&api_key, &camp, &"9h7DHKSDgE4uvP8313GVGdsEg3AvdAWSSTG7XZsLwBfeth4aePG".to_string());
-       send_wallet_payment(&api_key, &"9h7DHKSDgE4uvP8313GVGdsEg3AvdAWSSTG7XZsLwBfeth4aePG".to_string() , 1);
+        let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal);
+        get_p2s_address(&api_key, &camp, &"9h7DHKSDgE4uvP8313GVGdsEg3AvdAWSSTG7XZsLwBfeth4aePG".to_string());
+        get_wallet_addresses(&api_key); 
     }
 }
 
