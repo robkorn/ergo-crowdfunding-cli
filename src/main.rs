@@ -28,6 +28,41 @@ struct Args {
     arg_project_goal: String,
 }
 
+/// Datatype which holds relevant information about a Crowdfunding Campaign
+struct Campaign {
+    name: String,
+    project_pub_key: String,
+    project_deadline: u32,
+    project_goal: u32
+}
+
+/// Datatype which holds a `Campaign` and relevant information about the campaign as a backer
+struct BackedCampaign {
+    campaign: Campaign,
+    backer_pub_key: String,
+    p2s_address: String,
+}
+
+impl Campaign {
+    /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u32` integers
+    fn new (&self, name : &String, project_pub_key: &String, project_deadline: &String, project_goal: &String) -> Campaign{
+        let deadline : u32 = project_deadline.parse().expect("Deadline provided is not a valid integer.");
+        let goal : u32 = project_goal.parse().expect("Project goal provided is not a valid integer.");
+        Campaign {
+            name: name.clone(),
+            project_pub_key: project_pub_key.clone(),
+            project_deadline: deadline,
+            project_goal: goal
+        } 
+    }
+}
+
+
+impl BackedCampaign {
+
+}
+
+
 /// Builds the crowdfunding script with the required fields filled in
 fn build_crowdfund_script (backer_pub_key: &String, project_pub_key: &String, project_deadline: &String, goal: &String) -> Option<String> {
     let reg = Handlebars::new();
