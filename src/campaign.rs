@@ -12,11 +12,12 @@ pub struct Campaign {
    pub project_goal: u32
 }
 
-/// Datatype which holds a `Campaign` and relevant information about the campaign as a backer
-pub struct BackedCampaign {
-    pub campaign: Campaign,
+/// Datatype which holds a `Campaign` and relevant information about the campaign as a backer. Struct only created after a user has backed a campaign.
+pub struct BackedCampaign <'a> {
+    pub campaign: &'a Campaign,
     pub backer_pub_key: String,
     pub p2s_address: String,
+    pub backer_boxes: Vec<String>
 }
 
 impl Campaign {
@@ -45,13 +46,31 @@ impl Campaign {
         finalized_script.expect("Failed to produce crowdfunding script.")
     }
 
-    // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
-    //     let addresses = get_wallet_addresses(api_key);
+    /// Allows the user to back the Campaign
+    pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
+        let backer_pub_key = select_wallet_address(&api_key);
+        let p2s_address = get_p2s_address(&api_key, &self, &backer_pub_key);
+        let backer_box_id = send_wallet_payment(&api_key, &p2s_address, amount);
 
-    // }
+        if let Some(box_id) = backer_box_id {
+            let backer_boxes = vec![box_id];
+            return BackedCampaign::new(self, backer_pub_key, p2s_address, backer_boxes);
+        }
+        panic!("Failed to send wallet payment to P2S Address.");
+    }
 }
 
+impl<'a> BackedCampaign<'a> {
+    /// Create a new `BackedCampaign`. 
+    pub fn new (campaign : &'a Campaign, backer_pub_key: String, p2s_address: String, backer_boxes: Vec<String>) -> BackedCampaign<'a> { 
+        BackedCampaign  {   campaign: campaign,
+                            backer_pub_key: backer_pub_key,
+                            p2s_address: p2s_address,
+                            backer_boxes: backer_boxes
+                        }
+    }
 
-impl BackedCampaign {
-
+    // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new box produced from the new `send_wallet_payment()` added to `backer_boxes` vector.
+    // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
+    // }
 }

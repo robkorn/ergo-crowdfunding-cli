@@ -86,38 +86,28 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &
     panic!("Failed to acquire P2S Address. Make sure your node is running and that the data you provided is valid.");
 }
 
-/// Send payment from unlocked wallet to given address via local node api
-pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) {
+/// Send payment from unlocked wallet to given address via local node api. Returns the box identifier.
+/// Need to implement returning the box identifier
+pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> Option<String> {
     let nanoerg_amount = amount * 1000000000;
     let json_body = json!({ "address": address,
                             "value": nanoerg_amount });
     let reg = Handlebars::new();
 
-    if let Ok(pb) = reg.render_template(SEND_PAYMENT_TEMPLATE, &json_body){
-        let endpoint = "http://0.0.0.0:9052/wallet/payment/send";
-        let client = reqwest::Client::new();
-        let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
-        let res = client.post(endpoint)
-                  .header("accept", "application/json")
-                  .header("api_key", hapi_key)
-                  .header(CONTENT_TYPE, "application/json")
-                  .body(pb)
-                  .send();
+    let pb = reg.render_template(SEND_PAYMENT_TEMPLATE, &json_body).ok()?;
+    let endpoint = "http://0.0.0.0:9052/wallet/payment/send";
+    let client = reqwest::Client::new();
+    let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
+    let res = client.post(endpoint)
+                .header("accept", "application/json")
+                .header("api_key", hapi_key)
+                .header(CONTENT_TYPE, "application/json")
+                .body(pb)
+                .send();
 
-        if let Ok(mut r) = res {
-            if let Ok(text_response) = r.text(){
-                println!("Response from the wallet: {}", text_response);
-            }
+    let text_response = res.ok()?.text().ok()?;
+    println!("Response from the wallet: {}", text_response);
 
-        }
-        else if let Err(e) = res {
-            println!("Error: {:?}", e);
-            panic!("Failed to send wallet payment.");
-        }
-
-    }
-
-
-
-
+    // Return the identifier from the response here
+    return Some("".to_string());
 }

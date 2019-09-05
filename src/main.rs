@@ -45,8 +45,7 @@ pub fn main() {
     // If contribute command
     if args.cmd_contribute {
         let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal);
-        get_p2s_address(&api_key, &camp, &"9h7DHKSDgE4uvP8313GVGdsEg3AvdAWSSTG7XZsLwBfeth4aePG".to_string());
-        select_wallet_address(&api_key);
+        camp.back_campaign(&api_key, 1);
     }
 }
 
