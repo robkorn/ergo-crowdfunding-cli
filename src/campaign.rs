@@ -39,7 +39,7 @@ impl Campaign {
             ,"project_pub": self.project_pub_key
             ,"deadline": self.project_deadline.to_string()
             ,"amount": self.project_goal.to_string()
-        })).ok();
+        }));
 
         finalized_script.expect("Failed to produce crowdfunding script.")
     }
