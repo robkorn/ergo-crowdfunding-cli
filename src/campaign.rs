@@ -1,4 +1,5 @@
 use handlebars::Handlebars;
+use crate::wallet_reqs::{select_wallet_address, get_p2s_address, send_wallet_payment};
 
 static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{project_pub}}\") \n val deadline = {{deadline}} \n val minToRaise = {{amount}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
 
@@ -44,7 +45,9 @@ impl Campaign {
         finalized_script.expect("Failed to produce crowdfunding script.")
     }
 
-    // pub fn back_campaign(&self, amount: Int) -> BackedCampaign {
+    // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
+    //     let addresses = get_wallet_addresses(api_key);
+
     // }
 }
 

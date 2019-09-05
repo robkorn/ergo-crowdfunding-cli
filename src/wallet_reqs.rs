@@ -12,7 +12,34 @@ struct P2SAddress {
     address: String
 }
 
-/// Gets a list of all addresses from the local unlocked node wallet.
+/// Gets list of addresses and asks the user to select one
+pub fn select_wallet_address(api_key: &String) -> String {
+    let address_list = get_wallet_addresses(api_key);
+    if address_list.len() == 1 {
+        return address_list[0].clone();
+    }
+
+    let mut n = 0;
+    for address in &address_list {
+        n += 1;
+        println!("{}. {}", n, address);
+    }
+    println!("Which address would you like to select?");
+    let mut input = String::new();
+    if let Ok(_) = std::io::stdin().read_line(&mut input){
+        if let Ok(input_n) = input.trim().parse::<usize>(){
+            if input_n > address_list.len() || input_n < 1 {
+                println!("Please select an address within the range.");
+                return select_wallet_address(api_key);
+            }
+            return address_list[input_n-1].clone();
+
+        }
+    }
+    return select_wallet_address(api_key);
+}
+
+/// Gets a list of all addresses from the local unlocked node wallet
 pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
     let endpoint = "http://0.0.0.0:9052/wallet/addresses";
     let client = reqwest::Client::new();
@@ -27,14 +54,13 @@ pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
 
     let mut addresses : Vec<String> = vec![];
     for segment in res.text().expect("Failed to get addresses from wallet.").split("\""){
-        println!("{}", segment);
         let seg = segment.trim();
         if seg.chars().next().unwrap() == '9' {
            addresses.push(seg.to_string()); 
         }
     }
     if addresses.len() == 0 {
-        panic!("No addresses were found. Please make sure it is running on API port 9052 and your wallet is unlocked.");
+        panic!("No addresses were found. Please make sure your node running on API port 9052 and your wallet is unlocked.");
     }
     println!("{:?}", addresses);
     addresses
