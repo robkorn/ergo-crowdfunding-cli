@@ -9,22 +9,22 @@ static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = P
 
 /// Builds the crowdfunding script with the required fields filled in
 /// (Still need to add a few more fields)
-fn build_crowdfund_script (backer_pub_key: &String, project_pub_key: &String) -> Option<String> {
-     let reg = Handlebars::new();
-     let finalized_script = reg.render_template(CROWDFUND_TEMPLATE, 
-     &json!({"backer": backer_pub_key
-            ,"project_pub": project_pub_key
-            ,"deadline": "50000"         
-            ,"amount": "500"
-     })).ok();
-    println!("{}", &finalized_script.to_owned()?);
+fn build_crowdfund_script (backer_pub_key: &String, project_pub_key: &String, block_deadline: u32, amount: u32) -> Option<String> {
+    let reg = Handlebars::new();
+    let finalized_script = reg.render_template(CROWDFUND_TEMPLATE, 
+    &json!({"backer": backer_pub_key
+           ,"project_pub": project_pub_key
+           ,"deadline": block_deadline.to_string()
+           ,"amount": amount.to_string()
+    })).ok();
+   println!("{}", &finalized_script.to_owned()?);
 
-    finalized_script
+   finalized_script
 }
 
 pub fn main() {
     let backer_pub_key = "9h7DHKSDgE4uvP8313GVGdsEg3AvdAWSSTG7XZsLwBfeth4aePG".to_string();
     let project_pub_key = "9gBSqNT9LH9WjvWbyqEvFirMbYp4nfGHnoWdceKGu45AKiya3Fq".to_string();
-    build_crowdfund_script(&backer_pub_key, &project_pub_key);
+    build_crowdfund_script(&backer_pub_key, &project_pub_key, 50000, 500);
     ()
 }
