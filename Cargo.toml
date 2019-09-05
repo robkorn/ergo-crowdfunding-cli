@@ -1,5 +1,5 @@
 [package]
-name = "ergo_crowdfunding_cli"
+name = "ergo_cf"
 version = "0.1.0"
 authors = ["Robert Kornacki <11645932+robkorn@users.noreply.github.com>"]
 edition = "2018"
@@ -11,3 +11,4 @@ tinytemplate        = "1.0.2"
 handlebars          = "2.0.1"
 serde               = "1.0.99"
 serde_json          = "1.0.40"
+docopt              = "1.1.0"
