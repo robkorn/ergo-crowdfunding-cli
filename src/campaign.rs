@@ -1,6 +1,10 @@
-use handlebars::Handlebars;
 use crate::wallet_reqs::{select_wallet_address, get_p2s_address, send_wallet_payment};
+use handlebars::Handlebars;
 use serde::{Serialize, Deserialize};
+use std::path::Path;
+use std::fs::{File};
+use std::io::{copy};
+use std::io::prelude::*;
 
 static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{project_pub}}\") \n val deadline = {{deadline}} \n val minToRaise = {{amount}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
 
@@ -70,6 +74,17 @@ impl Campaign {
         }
         panic!("Failed to send wallet payment to P2S Address.");
     }
+
+    /// Save the campaign locally into a json file in the `storage/campaigns/` folder
+    pub fn save_locally(self) {
+        let mut path = "storage/campaigns/".to_string();
+        path.push_str(&self.name);
+        path.push_str(".json");
+        path.retain(|c| c != '\n' && c != ' ');
+        let file = File::create(path.trim()).expect("Failed to create Campaign file.");
+        serde_json::to_writer_pretty(file, &self).expect("Failed to save Campaign to file.");
+        println!("Campaign saved locally.");
+    }
 }
 
 impl BackedCampaign {
@@ -85,6 +100,18 @@ impl BackedCampaign {
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
     // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
     // }
+
+
+    /// Save the campaign locally into a json file in the `storage/backed_campaigns/` folder
+    pub fn save_locally(self) {
+        let mut path = "storage/backed_campaigns/".to_string();
+        path.push_str(&self.campaign.name);
+        path.push_str(".json");
+        path.retain(|c| c != '\n' && c != ' ');
+        let file = File::create(path.trim()).expect("Failed to create Backed Campaign file.");
+        serde_json::to_writer_pretty(file, &self).expect("Failed to save Backed Campaign to file.");
+        println!("Campaign saved locally.");
+    }
 }
 
 impl BackingTx {

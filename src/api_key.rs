@@ -26,6 +26,7 @@ pub fn check_for_api_key() -> String {
         let mut input = String::new();
         if let Ok(_) = std::io::stdin().read_line(&mut input){
             println!("API key inputted: {}", input);
+            input.retain(|c| c != '\n' && c != ' ');
             save_api_key_to_file(&input.trim().to_string());
         }
         else {
