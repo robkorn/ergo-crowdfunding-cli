@@ -102,6 +102,11 @@ impl Campaign {
         let mut path = EXPORT_FOLDER.to_string();
         self.save(&mut path);
     }
+
+    /// Prints info about the Campaign
+    pub fn print_info(&self) {
+        println!("Local Campaign Name: {}\nCampaign Pubkey/Address: {}\nCampaign Deadline Block: {}\nCampaign Goal: {}", self.name, self.project_pub_key, self.project_deadline, self.project_goal);
+    }
 }
 
 impl BackedCampaign {
@@ -160,7 +165,7 @@ pub fn choose_local_campaign() -> Camp {
             println!("{}.{}", n, c.name);
         }
     }
-    println!("Which campaign would you like to select?");
+    println!("\nWhich campaign would you like to select?");
     let mut input = String::new();
     if let Ok(_) = std::io::stdin().read_line(&mut input){
         if let Ok(input_n) = input.trim().parse::<usize>(){

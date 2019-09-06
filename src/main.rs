@@ -64,17 +64,16 @@ pub fn main() {
 
     clear_and_title(&terminal);
 
-    // choose_local_campaign();
-
     // Allows you to create a new Crowdfunding Campaign
     if args.cmd_create {
         let name = acquire_project_name();
         let address = select_wallet_address(&api_key);
         let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal);
         camp.clone().save_locally();
-        camp.export();
+        camp.clone().export();
         clear_and_title(&terminal);
-        println!("Your campaign has been created.\nCheck out the 'export' folder to share the campaign with others." )
+        println!("Your campaign has been created.\nCheck out the 'export' folder to share the campaign file with others.\n");
+        camp.print_info();
     }
 
     // Allows you to track a Crowdfunding Campaign
