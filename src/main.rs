@@ -17,6 +17,7 @@ use wallet_reqs::{select_wallet_address};
 
 const USAGE: &'static str = "
 Usage: 
+        ergo_cf back <campaign-deadline> <campaign-goal> 
         ergo_cf create <campaign-deadline> <campaign-goal> 
         ergo_cf info
         ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
@@ -110,7 +111,6 @@ pub fn main() {
             Camp::Backed(bc) => bc.campaign.print_info()
         }
     }
-
 
     // Allows you to import a Crowdfunding Campaign from a file
     if args.cmd_import {

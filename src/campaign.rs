@@ -161,6 +161,10 @@ impl BackingTx {
 /// Choose a campaign from those which are locally saved
 pub fn choose_local_campaign() -> Camp {
     let camps = get_local_campaigns();
+    if camps.len() == 0 {
+        println!("You have no local Campaigns. Please create or track a Campaign first to interact with one."); 
+        std::process::exit(0);
+    }
     let mut n = 0;
     for camp in &camps {
         n += 1;
