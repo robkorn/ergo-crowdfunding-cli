@@ -1,5 +1,5 @@
 
-use crate::campaign::Campaign;
+use crate::campaign::{Campaign, BackingTx};
 use handlebars::Handlebars;
 use reqwest;
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
@@ -62,7 +62,6 @@ pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
     if addresses.len() == 0 {
         panic!("No addresses were found. Please make sure your node running on API port 9052 and your wallet is unlocked.");
     }
-    println!("{:?}", addresses);
     addresses
 }
 
@@ -80,7 +79,6 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &
                 .expect("Failed to send request to local node. Please make sure it is running on API port 9052.");
 
     if let Ok(p2saddress) = res.json::<P2SAddress>() {
-        println!("{}", p2saddress.address);
         return p2saddress.address;
     }
     panic!("Failed to acquire P2S Address. Make sure your node is running and that the data you provided is valid.");
@@ -88,8 +86,9 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &
 
 /// Send payment from unlocked wallet to given address via local node api. Returns the box identifier.
 /// Need to implement returning the box identifier
-pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> Option<String> {
-    let nanoerg_amount = amount * 1000000000;
+pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> Option<BackingTx> {
+    // let nanoerg_amount = amount * 1000000000;
+    let nanoerg_amount : u32 = amount * 100000;
     let json_body = json!({ "address": address,
                             "value": nanoerg_amount });
     let reg = Handlebars::new();
@@ -105,9 +104,8 @@ pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> O
                 .body(pb)
                 .send();
 
-    let text_response = res.ok()?.text().ok()?;
-    println!("Response from the wallet: {}", text_response);
+    let mut tx_id = res.ok()?.text().ok()?;
+    tx_id.retain(|c| c != '"');
 
-    // Return the identifier from the response here
-    return Some("".to_string());
+    return Some(BackingTx::new(tx_id, amount));
 }

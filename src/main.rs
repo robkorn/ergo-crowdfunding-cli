@@ -44,8 +44,9 @@ pub fn main() {
 
     // If contribute command
     if args.cmd_contribute {
-        let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal);
-        camp.back_campaign(&api_key, 1);
+        let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal, false);
+        let backed_camp = camp.back_campaign(&api_key, 1);
+        println!("{:?}", backed_camp);
     }
 }
 
