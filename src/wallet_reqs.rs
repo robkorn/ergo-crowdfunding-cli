@@ -81,6 +81,11 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &
     if let Ok(p2saddress) = res.json::<P2SAddress>() {
         return p2saddress.address;
     }
+    else if let Err(e) = res.json::<P2SAddress>() {
+        println!("{:?}", e);
+        let test = res.text().unwrap();
+        println!("{:?}", test);
+    }
     panic!("Failed to acquire P2S Address. Make sure your node is running and that the data you provided is valid.");
 }
 

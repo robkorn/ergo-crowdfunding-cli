@@ -17,7 +17,7 @@ use wallet_reqs::{select_wallet_address};
 
 const USAGE: &'static str = "
 Usage: 
-        ergo_cf back <campaign-deadline> <campaign-goal> 
+        ergo_cf back
         ergo_cf create <campaign-deadline> <campaign-goal> 
         ergo_cf info
         ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
@@ -26,6 +26,7 @@ Usage:
 
 #[derive(Debug, Deserialize)]
 struct Args {
+    cmd_back: bool,
     cmd_create: bool,
     cmd_track: bool,
     cmd_info: bool,
@@ -41,7 +42,6 @@ struct Args {
 fn build_folder_structure() {
     create_dir(Path::new("storage/")).ok();
     create_dir(Path::new(CAMPAIGNS_FOLDER)).ok();
-    create_dir(Path::new(BACKED_CAMPAIGNS_FOLDER)).ok();
     create_dir(Path::new(EXPORT_FOLDER)).ok();
 }
 
@@ -64,12 +64,28 @@ fn clear_and_title(terminal: &crossterm::Terminal) {
 }
 
 /// Track Campagin
-fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal){
+fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
     camp.clone().save_locally();
     clear_and_title(&terminal);
     println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
     camp.print_info();
 
+}
+
+/// Asks user for an amount
+fn query_amount() -> u32 {
+    println!("\nHow many Erg do you want to send to this campaign? (Only whole number values for now)");
+    let mut input = String::new();
+    if let Ok(_) = std::io::stdin().read_line(&mut input){
+        if let Ok(input_n) = input.trim().parse::<u32>(){
+            if input_n < 1 {
+                println!("Please input a whole number greater than 0.");
+                return query_amount();
+            }
+            return input_n;
+        }
+    }
+    return 0;
 }
 
 pub fn main() {
@@ -108,7 +124,7 @@ pub fn main() {
         clear_and_title(&terminal);
         match camp {
             Camp::NotBacked(c) => c.print_info(),
-            Camp::Backed(bc) => bc.campaign.print_info()
+            Camp::Backed(bc) => bc.print_info()
         }
     }
 
@@ -118,10 +134,23 @@ pub fn main() {
         track_campaign(&camp, &terminal);
     }
 
-    // Allows you to interact with one of the tracked Crowdfunding Campaigns
-    // if args.cmd_back {
-        // choose_local_campaign();
-        // }
+    // Allows you to back one of the tracked Crowdfunding Campaigns
+    if args.cmd_back {
+        let camp = choose_local_campaign();
+        clear_and_title(&terminal);
+        if let Camp::NotBacked(c) = camp {
+            c.clone().print_info();
+            let back_amount = query_amount();
+            clear_and_title(&terminal);
+            let backed_camp = c.back_campaign(&api_key, back_amount);
+            clear_and_title(&terminal);
+            backed_camp.print_info();
+
+        }
+        else if let Camp::Backed(bc) = camp {
+            // implement ability to back an already backed campaign
+        }
+    }
 }
 
 

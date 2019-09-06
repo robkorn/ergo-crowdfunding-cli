@@ -4,7 +4,9 @@ use serde::{Serialize, Deserialize};
 use std::path::Path;
 use std::fs::{File, read_dir};
 
-static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{project_adress}}\") \n val deadline = {{deadline}} \n val minToRaise = {{amount}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
+static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{address}}\") \n val deadline = {{deadline}} \n val minToRaise = {{goal}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
+
+// static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{address}}\") \n val deadline = 50000 \n val minToRaise = 500L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
 
 pub static CAMPAIGNS_FOLDER : &'static str = "storage/campaigns/";
 pub static BACKED_CAMPAIGNS_FOLDER : &'static str = "storage/backed_campaigns/";
@@ -69,7 +71,7 @@ impl Campaign {
         &json!({"backer": backer_address
             ,"address": self.address
             ,"deadline": self.deadline.to_string()
-            ,"amount": self.goal.to_string()
+            ,"goal": self.goal.to_string()
         }));
 
         finalized_script.expect("Failed to produce crowdfunding script.")
@@ -83,7 +85,9 @@ impl Campaign {
 
         if let Some(bt) = backing_tx {
             let backer_txs = vec![bt];
-            return BackedCampaign::new(self, backer_address, p2s_address, backer_txs);
+            let backed_camp = BackedCampaign::new(self, backer_address, p2s_address, backer_txs);
+            backed_camp.clone().save_locally();
+            return backed_camp;
         }
         panic!("Failed to send wallet payment to P2S Address.");
     }
@@ -111,7 +115,7 @@ impl Campaign {
 
     /// Prints info about the Campaign
     pub fn print_info(&self) {
-        println!("Local Campaign Name: {}\nCampaign Address: {}\nCampaign Deadline Block: {}\nCampaign Goal: {}", self.name, self.address, self.deadline, self.goal);
+        println!("Campaign Name: {}\nCampaign Address: {}\nCampaign Deadline Block: {}\nCampaign Goal: {}", self.name, self.address, self.deadline, self.goal);
     }
 }
 
@@ -128,6 +132,16 @@ impl BackedCampaign {
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
     // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
     // }
+
+
+    /// Prints info about the `BackedCampaign`
+    pub fn print_info(&self) {
+        self.campaign.print_info();
+        println!("Address You Used To Back: {}\nP2S Address Paid To: {}\nBacking Txs:", self.backer_address, self.p2s_address);
+        for tx in &self.backer_txs{
+            println!("   - {}: {} Erg", tx.tx_id, tx.backed_amount);
+        }
+    }
 
 
     /// Saves the `BackedCampaign` to path
