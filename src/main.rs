@@ -11,7 +11,8 @@ use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, Campaign, Camp, choose_local_cam
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
-use std::fs::{create_dir};
+use std::fs::{File, create_dir};
+use std::io::prelude::*;
 use std::path::Path;
 use wallet_reqs::{select_wallet_address};
 
@@ -45,6 +46,16 @@ fn build_folder_structure() {
     create_dir(Path::new(STORAGE_FOLDER!())).ok();
     create_dir(Path::new(CAMPAIGNS_FOLDER)).ok();
     create_dir(Path::new(EXPORT_FOLDER)).ok();
+}
+
+/// Checks if `node.ip` file exists, else creates default one for node at `http://0.0.0.0:9052`
+fn generate_default_node_ip_file() {
+    let file_path = Path::new("node.ip");
+    if file_path.exists() == false {
+        let node_ip = "http://0.0.0.0:9052".to_string();
+        let mut file = File::create(file_path).expect("Failed to write to node.ip file.");
+        file.write_all(&node_ip.into_bytes()).expect("Failed to write node ip to file.");
+    }
 }
 
 /// Ask the user for campaign name
@@ -92,6 +103,7 @@ fn query_amount() -> u32 {
 
 pub fn main() {
     build_folder_structure();
+    generate_default_node_ip_file();
 
     // Get basic values
     let args: Args = Docopt::new(USAGE)

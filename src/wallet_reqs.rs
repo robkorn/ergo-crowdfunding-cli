@@ -1,15 +1,24 @@
-
 use crate::campaign::{Campaign, BackingTx};
 use handlebars::Handlebars;
 use reqwest;
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde::Deserialize;
+use std::io::prelude::*;
+use std::fs::{File};
 
 static SEND_PAYMENT_TEMPLATE : &'static str = r#"[{"address":"{{address}}","value":{{value}} }]"#;
 
 #[derive(Deserialize)]
 struct P2SAddress {
     address: String
+}
+
+/// Gets node ip from local file `node.ip`
+pub fn get_node_ip() -> String {
+    let mut file = File::open("node.ip").expect("Failed to open node ip file.");
+    let mut st = String::new();
+    file.read_to_string(&mut st).ok().expect("Failed to read node ip from file.");
+    st.trim().to_string()
 }
 
 /// Gets list of addresses and asks the user to select one
@@ -41,15 +50,15 @@ pub fn select_wallet_address(api_key: &String) -> String {
 
 /// Gets a list of all addresses from the local unlocked node wallet
 pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
-    let endpoint = "http://0.0.0.0:9052/wallet/addresses";
+    let endpoint = get_node_ip() + "/wallet/addresses";
     let client = reqwest::Client::new();
     let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
-    let mut res = client.get(endpoint)
+    let mut res = client.get(&endpoint)
                 .header("accept", "application/json")
                 .header("api_key", hapi_key)
                 .header(CONTENT_TYPE, "application/json")
                 .send()
-                .expect("Failed to send request to local node. Please make sure it is running on API port 9052.");
+                .expect("Failed to send request to local node. Please make sure it is running on the IP & Port specified in `node.ip` file.");
 
 
     let mut addresses : Vec<String> = vec![];
@@ -60,31 +69,31 @@ pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
         }
     }
     if addresses.len() == 0 {
-        panic!("No addresses were found. Please make sure your node running on API port 9052 and your wallet is unlocked.");
+        panic!("No addresses were found. Please make sure it is running on the IP & Port specified in `node.ip` file and that your wallet is unlocked.");
     }
     addresses
 }
 
 /// Get P2S Address for Backer to submit to for the Campaign
 pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &String) -> String {
-    let endpoint = "http://0.0.0.0:9052/script/p2sAddress";
+    let endpoint = get_node_ip() + "/script/p2sAddress";
     let client = reqwest::Client::new();
     let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
-    let mut res = client.post(endpoint)
+    let mut res = client.post(&endpoint)
                 .header("accept", "application/json")
                 .header("api_key", hapi_key)
                 .header(CONTENT_TYPE, "application/json")
                 .body(campaign.build_script(backer_address))
                 .send()
-                .expect("Failed to send request to local node. Please make sure it is running on API port 9052.");
+                .expect("Failed to send request to local node. Please make sure it is running on the IP & Port specified in `node.ip` file and that your wallet is unlocked.");
 
     if let Ok(p2saddress) = res.json::<P2SAddress>() {
         return p2saddress.address;
     }
     else if let Err(e) = res.json::<P2SAddress>() {
         println!("{:?}", e);
-        let test = res.text().unwrap();
-        println!("{:?}", test);
+        let err = res.text().expect("P2S Address error.");
+        println!("P2S address node error: {:?}", err);
     }
     panic!("Failed to acquire P2S Address. Make sure your node is running and that the data you provided is valid.");
 }
@@ -99,10 +108,10 @@ pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> O
     let reg = Handlebars::new();
 
     let pb = reg.render_template(SEND_PAYMENT_TEMPLATE, &json_body).ok()?;
-    let endpoint = "http://0.0.0.0:9052/wallet/payment/send";
+    let endpoint = get_node_ip() + "/wallet/payment/send";
     let client = reqwest::Client::new();
     let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
-    let res = client.post(endpoint)
+    let res = client.post(&endpoint)
                 .header("accept", "application/json")
                 .header("api_key", hapi_key)
                 .header(CONTENT_TYPE, "application/json")

@@ -5,7 +5,7 @@ use std::io::prelude::*;
 /// Saves a provided api key to `api.key` file
 fn save_api_key_to_file(api_key: &String) {
     let mut file = File::create("api.key").expect("Failed to write to api.key file.");
-    file.write_all(&api_key.clone().into_bytes()).expect("Failed to write keypair to file.");
+    file.write_all(&api_key.clone().into_bytes()).expect("Failed to write api key to file.");
 }
 
 /// Gets an api key from `api.key` file
