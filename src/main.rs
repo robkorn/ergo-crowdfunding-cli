@@ -20,6 +20,7 @@ Usage:
         ergo_cf create <campaign-deadline> <campaign-goal> 
         ergo_cf info
         ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
+        ergo_cf import <file-path>
 ";
 
 #[derive(Debug, Deserialize)]
@@ -27,10 +28,12 @@ struct Args {
     cmd_create: bool,
     cmd_track: bool,
     cmd_info: bool,
+    cmd_import: bool,
     arg_campaign_name: String,
     arg_campaign_address: String,
     arg_campaign_deadline: String,
     arg_campaign_goal: String,
+    arg_file_path: String,
 }
 
 /// Builds the folder structure for local storage
@@ -53,9 +56,19 @@ fn acquire_campaign_name() -> String {
     return acquire_campaign_name();
 }
 
+/// Clear terminal screen and print title
 fn clear_and_title(terminal: &crossterm::Terminal) {
     terminal.clear(ClearType::All);
     println!("Ergo Crowdfund CLI\n------------------");
+}
+
+/// Track Campagin
+fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal){
+    camp.clone().save_locally();
+    clear_and_title(&terminal);
+    println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
+    camp.print_info();
+
 }
 
 pub fn main() {
@@ -85,10 +98,7 @@ pub fn main() {
     // Allows you to track a Crowdfunding Campaign
     if args.cmd_track {
         let camp = Campaign::new(&args.arg_campaign_name, &args.arg_campaign_address, &args.arg_campaign_deadline, &args.arg_campaign_goal);
-        camp.clone().save_locally();
-        clear_and_title(&terminal);
-        println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
-        camp.print_info();
+        track_campaign(&camp, &terminal);
     }
 
     // Provides info about a tracked Crowdfunding Campaign
@@ -103,8 +113,10 @@ pub fn main() {
 
 
     // Allows you to import a Crowdfunding Campaign from a file
-    // if args.cmd_import {
-        // }
+    if args.cmd_import {
+        let camp = Campaign::from_file(&args.arg_file_path);
+        track_campaign(&camp, &terminal);
+    }
 
     // Allows you to interact with one of the tracked Crowdfunding Campaigns
     // if args.cmd_back {

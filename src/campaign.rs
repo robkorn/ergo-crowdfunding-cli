@@ -56,6 +56,12 @@ impl Campaign {
         } 
     }
 
+    /// Create a new `Campaign` from a previously exported `Campaign`
+    pub fn from_file (path: &String) -> Campaign {
+        let file = File::open(path).expect("Failed to read Campaign file.");
+        serde_json::from_reader(file).expect("Failed to process Campaign from json.")
+    }
+
     /// Builds the crowdfunding script with the required fields filled in
     pub fn build_script(&self, backer_address: &String) -> String {
         let reg = Handlebars::new();
