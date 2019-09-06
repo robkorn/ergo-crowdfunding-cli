@@ -148,7 +148,12 @@ pub fn main() {
 
         }
         else if let Camp::Backed(bc) = camp {
-            // implement ability to back an already backed campaign
+            bc.clone().print_info();
+            let back_amount = query_amount();
+            clear_and_title(&terminal);
+            let backed_camp = bc.back_campaign(&api_key, back_amount);
+            clear_and_title(&terminal);
+            backed_camp.print_info();
         }
     }
 }

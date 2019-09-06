@@ -131,8 +131,21 @@ impl BackedCampaign {
     }
 
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
-    // pub fn back_campaign(&self, api_key: &String, amount: u32) -> BackedCampaign {
-    // }
+    pub fn back_campaign(self, api_key: &String, amount: u32) -> BackedCampaign {
+        let backer_address = select_wallet_address(&api_key);
+        let p2s_address = get_p2s_address(&api_key, &self.campaign, &backer_address);
+        let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
+
+        if let Some(bt) = backing_tx {
+            let mut backer_txs = self.backer_txs;
+            backer_txs.push(bt);
+            let backed_camp = BackedCampaign::new(self.campaign, backer_address, p2s_address, backer_txs);
+            backed_camp.clone().save_locally();
+            return backed_camp;
+        }
+        panic!("Failed to send wallet payment to P2S Address.");
+
+    }
 
 
     /// Prints info about the `BackedCampaign`
