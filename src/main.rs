@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{EXPORT_FOLDER ,CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign, Camp, choose_local_campaign};
+use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, Campaign, Camp, choose_local_campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -40,7 +40,7 @@ struct Args {
 
 /// Builds the folder structure for local storage
 fn build_folder_structure() {
-    create_dir(Path::new("storage/")).ok();
+    create_dir(Path::new(STORAGE_FOLDER!())).ok();
     create_dir(Path::new(CAMPAIGNS_FOLDER)).ok();
     create_dir(Path::new(EXPORT_FOLDER)).ok();
 }

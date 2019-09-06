@@ -8,8 +8,9 @@ static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = P
 
 // static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{address}}\") \n val deadline = 50000 \n val minToRaise = 500L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
 
-pub static CAMPAIGNS_FOLDER : &'static str = "storage/campaigns/";
-pub static BACKED_CAMPAIGNS_FOLDER : &'static str = "storage/backed_campaigns/";
+#[macro_export]
+macro_rules! STORAGE_FOLDER {() => ( ".storage/" )}
+pub static CAMPAIGNS_FOLDER : &'static str = concat!(STORAGE_FOLDER!(), "campaigns/");
 pub static EXPORT_FOLDER : &'static str = "export/";
 
 
@@ -101,13 +102,13 @@ impl Campaign {
         serde_json::to_writer_pretty(file, &self).expect("Failed to save Campaign to file.");
     }
 
-    /// Save the `Campaign` locally into a json file in the `storage/campaigns/` folder
+    /// Save the `Campaign` locally into a json file in the Campaigns folder
     pub fn save_locally(self) {
         let mut path = CAMPAIGNS_FOLDER.to_string();
         self.save(&mut path);
     }
 
-    /// Exports the `Campaign` into a json file to be shared in the `export/` folder
+    /// Exports the `Campaign` into a json file to be shared in the export folder
     pub fn export(self) {
         let mut path = EXPORT_FOLDER.to_string();
         self.save(&mut path);
@@ -154,13 +155,13 @@ impl BackedCampaign {
         println!("Campaign saved locally.");
     }
 
-    /// Save the `BackedCampaign` locally into a json file in the `storage/backed_campaigns/` folder
+    /// Save the `BackedCampaign` locally into a json file in the Campaigns folder
     pub fn save_locally(self) {
-        let mut path = BACKED_CAMPAIGNS_FOLDER.to_string();
+        let mut path = CAMPAIGNS_FOLDER.to_string();
         self.save(&mut path);
     }
 
-    /// Exports the `Campaign` from the `BackedCampaign` to `export/` folder
+    /// Exports the `Campaign` from the `BackedCampaign` to Export folder
     pub fn export(self) {
         self.campaign.export();
     }
@@ -212,18 +213,15 @@ pub fn get_local_campaigns() -> Vec<Camp> {
         for rentry in rd {
             if let Ok(entry) = rentry {
                 let file = File::open(entry.path()).expect("Failed to read Campaign json file.");
-                let camp : Campaign = serde_json::from_reader(file).expect("Failed to process Campaign from json file.");
-                campaigns.push(Camp::NotBacked(camp));
-            }
-        }
-    }
-    let path = Path::new(BACKED_CAMPAIGNS_FOLDER);
-    if let Ok(rd) = read_dir(path){
-        for rentry in rd {
-            if let Ok(entry) = rentry {
-                let file = File::open(entry.path()).expect("Failed to read Backed Campaign json file.");
-                let backed_camp : BackedCampaign = serde_json::from_reader(file).expect("Failed to process Backed Campaign from json file.");
-                campaigns.push(Camp::Backed(backed_camp));
+                if let Ok(camp) = serde_json::from_reader(file) {
+                    campaigns.push(Camp::NotBacked(camp));
+                    continue;
+                }
+                let file = File::open(entry.path()).expect("Failed to read Campaign json file.");
+                if let Ok(backed_camp) = serde_json::from_reader(file) {
+                    campaigns.push(Camp::Backed(backed_camp));
+                }
+
             }
         }
     }
