@@ -8,11 +8,12 @@ mod wallet_reqs;
 
 use api_key::{check_for_api_key};
 use campaign::{Campaign};
-use wallet_reqs::{select_wallet_address};
+use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
 use std::fs::{create_dir};
 use std::path::Path;
+use wallet_reqs::{select_wallet_address};
 
 const USAGE: &'static str = "
 Usage: ergo_cf create <project-deadline> <project-goal> 
@@ -37,7 +38,7 @@ fn build_folder_structure() {
 
 /// Ask the user for project name
 fn acquire_project_name() -> String {
-    println!("Please enter a Crowdfund Campaign name:");
+    println!("Please enter a name for your new Crowdfund Campaign:");
     let mut input = String::new();
     if let Ok(_) = std::io::stdin().read_line(&mut input) {
         input.retain(|c| c != '\n');
@@ -49,7 +50,6 @@ fn acquire_project_name() -> String {
 
 // Eventually get backer_pubkey from local node if wallet is unlocked (requires node API key)
 pub fn main() {
-    println!("Ergo Crowdfund CLI\n------------------");
     build_folder_structure();
 
     // Get basic values
@@ -57,10 +57,13 @@ pub fn main() {
     .and_then(|d| d.deserialize())
     .unwrap_or_else(|e| e.exit());
     let api_key = check_for_api_key();
+    let mut terminal = terminal();
+
+    terminal.clear(ClearType::All);
+    println!("Ergo Crowdfund CLI\n------------------");
 
     // Allows you to create a new Crowdfunding Campaign
     if args.cmd_create {
-        println!("You are now creating a new Crowdfunding Campaign.");
         let name = acquire_project_name();
         let address = select_wallet_address(&api_key);
         let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal, true);
