@@ -20,8 +20,9 @@ Usage:
         ergo_cf back
         ergo_cf create <campaign-deadline> <campaign-goal> 
         ergo_cf info
-        ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
         ergo_cf import <file-path>
+        ergo_cf export
+        ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
 ";
 
 #[derive(Debug, Deserialize)]
@@ -31,6 +32,7 @@ struct Args {
     cmd_track: bool,
     cmd_info: bool,
     cmd_import: bool,
+    cmd_export: bool,
     arg_campaign_name: String,
     arg_campaign_address: String,
     arg_campaign_deadline: String,
@@ -132,6 +134,13 @@ pub fn main() {
     if args.cmd_import {
         let camp = Campaign::from_file(&args.arg_file_path);
         track_campaign(&camp, &terminal);
+    }
+
+    // Allows you to export a Crowdfunding Campaign to a file
+    if args.cmd_export {
+        let camp = choose_local_campaign();
+        if let Camp::Backed(bc) = camp {bc.export()}
+        else if let Camp::NotBacked(c) = camp {c.export()}
     }
 
     // Allows you to back one of the tracked Crowdfunding Campaigns
