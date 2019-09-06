@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{EXPORT_FOLDER ,CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign, choose_local_campaign};
+use campaign::{EXPORT_FOLDER ,CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign, Camp, choose_local_campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -18,6 +18,7 @@ use wallet_reqs::{select_wallet_address};
 const USAGE: &'static str = "
 Usage: 
         ergo_cf create <campaign-deadline> <campaign-goal> 
+        ergo_cf info
         ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
 ";
 
@@ -25,6 +26,7 @@ Usage:
 struct Args {
     cmd_create: bool,
     cmd_track: bool,
+    cmd_info: bool,
     arg_campaign_name: String,
     arg_campaign_address: String,
     arg_campaign_deadline: String,
@@ -81,9 +83,23 @@ pub fn main() {
     }
 
     // Allows you to track a Crowdfunding Campaign
-    // if args.cmd_track {
-    //     let camp = Campaign::new(&args.arg_campaign_name, &args.arg_addresskey, &args.arg_campaign_deadline, &args.arg_campaign_goal, false);
-    // }
+    if args.cmd_track {
+        let camp = Campaign::new(&args.arg_campaign_name, &args.arg_campaign_address, &args.arg_campaign_deadline, &args.arg_campaign_goal);
+        camp.clone().save_locally();
+        clear_and_title(&terminal);
+        println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
+        camp.print_info();
+    }
+
+    // Provides info about a tracked Crowdfunding Campaign
+    if args.cmd_info {
+        let camp = choose_local_campaign();
+        clear_and_title(&terminal);
+        match camp {
+            Camp::NotBacked(c) => c.print_info(),
+            Camp::Backed(bc) => bc.campaign.print_info()
+        }
+    }
 
 
     // Allows you to import a Crowdfunding Campaign from a file

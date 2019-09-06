@@ -159,10 +159,10 @@ pub fn choose_local_campaign() -> Camp {
     for camp in &camps {
         n += 1;
         if let Camp::Backed(bc) = camp {
-            println!("{}.{} - (You Backed This Campaign Previously)", n, bc.campaign.name);
+            println!("{}. {} - (You Backed This Campaign Previously)", n, bc.campaign.name);
         }
         else if let Camp::NotBacked(c) = camp {
-            println!("{}.{}", n, c.name);
+            println!("{}. {}", n, c.name);
         }
     }
     println!("\nWhich campaign would you like to select?");
