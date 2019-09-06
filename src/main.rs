@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{Campaign};
+use campaign::{CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -28,12 +28,10 @@ struct Args {
 
 /// Builds the folder structure for local storage
 fn build_folder_structure() {
-    let mut storage_path = "storage/".to_string();
-    create_dir(Path::new(&storage_path)).ok();
-    storage_path.push_str("campaigns");
-    create_dir(Path::new(&storage_path)).ok();
-    let storage_path2 = "storage/backed_campaigns/".to_string();
-    create_dir(Path::new(&storage_path2)).ok();
+    create_dir(Path::new("storage/")).ok();
+    create_dir(Path::new(CAMPAIGNS_FOLDER)).ok();
+    create_dir(Path::new(BACKED_CAMPAIGNS_FOLDER)).ok();
+    create_dir(Path::new("export/")).ok();
 }
 
 /// Ask the user for project name
@@ -66,8 +64,9 @@ pub fn main() {
     if args.cmd_create {
         let name = acquire_project_name();
         let address = select_wallet_address(&api_key);
-        let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal, true);
-        camp.save_locally();
+        let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal);
+        camp.clone().save_locally();
+        camp.export();
     }
 
     // Allows you to track a Crowdfunding Campaign
