@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign};
+use campaign::{EXPORT_FOLDER ,CAMPAIGNS_FOLDER, BACKED_CAMPAIGNS_FOLDER, Campaign, choose_local_campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -31,7 +31,7 @@ fn build_folder_structure() {
     create_dir(Path::new("storage/")).ok();
     create_dir(Path::new(CAMPAIGNS_FOLDER)).ok();
     create_dir(Path::new(BACKED_CAMPAIGNS_FOLDER)).ok();
-    create_dir(Path::new("export/")).ok();
+    create_dir(Path::new(EXPORT_FOLDER)).ok();
 }
 
 /// Ask the user for project name
@@ -46,6 +46,11 @@ fn acquire_project_name() -> String {
     return acquire_project_name();
 }
 
+fn clear_and_title(terminal: &crossterm::Terminal) {
+    terminal.clear(ClearType::All);
+    println!("Ergo Crowdfund CLI\n------------------");
+}
+
 // Eventually get backer_pubkey from local node if wallet is unlocked (requires node API key)
 pub fn main() {
     build_folder_structure();
@@ -57,8 +62,9 @@ pub fn main() {
     let api_key = check_for_api_key();
     let mut terminal = terminal();
 
-    terminal.clear(ClearType::All);
-    println!("Ergo Crowdfund CLI\n------------------");
+    clear_and_title(&terminal);
+
+    // choose_local_campaign();
 
     // Allows you to create a new Crowdfunding Campaign
     if args.cmd_create {
@@ -67,6 +73,8 @@ pub fn main() {
         let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal);
         camp.clone().save_locally();
         camp.export();
+        clear_and_title(&terminal);
+        println!("Your campaign has been created.\nCheck out the 'export' folder to share the campaign with others." )
     }
 
     // Allows you to track a Crowdfunding Campaign

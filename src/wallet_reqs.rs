@@ -6,7 +6,7 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde::Deserialize;
 
 static SEND_PAYMENT_TEMPLATE : &'static str = r#"[{"address":"{{address}}","value":{{value}} }]"#;
-    
+
 #[derive(Deserialize)]
 struct P2SAddress {
     address: String
