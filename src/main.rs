@@ -16,14 +16,19 @@ use std::path::Path;
 use wallet_reqs::{select_wallet_address};
 
 const USAGE: &'static str = "
-Usage: ergo_cf create <project-deadline> <project-goal> 
+Usage: 
+        ergo_cf create <campaign-deadline> <campaign-goal> 
+        ergo_cf track <campaign-name> <campaign-address> <campaign-deadline> <campaign-goal> 
 ";
 
 #[derive(Debug, Deserialize)]
 struct Args {
     cmd_create: bool,
-    arg_project_deadline: String,
-    arg_project_goal: String,
+    cmd_track: bool,
+    arg_campaign_name: String,
+    arg_campaign_address: String,
+    arg_campaign_deadline: String,
+    arg_campaign_goal: String,
 }
 
 /// Builds the folder structure for local storage
@@ -34,8 +39,8 @@ fn build_folder_structure() {
     create_dir(Path::new(EXPORT_FOLDER)).ok();
 }
 
-/// Ask the user for project name
-fn acquire_project_name() -> String {
+/// Ask the user for campaign name
+fn acquire_campaign_name() -> String {
     println!("Please enter a name for your new Crowdfund Campaign:");
     let mut input = String::new();
     if let Ok(_) = std::io::stdin().read_line(&mut input) {
@@ -43,7 +48,7 @@ fn acquire_project_name() -> String {
         return input;
     }
     println!("Please make sure your name is valid utf-16.");
-    return acquire_project_name();
+    return acquire_campaign_name();
 }
 
 fn clear_and_title(terminal: &crossterm::Terminal) {
@@ -51,7 +56,6 @@ fn clear_and_title(terminal: &crossterm::Terminal) {
     println!("Ergo Crowdfund CLI\n------------------");
 }
 
-// Eventually get backer_pubkey from local node if wallet is unlocked (requires node API key)
 pub fn main() {
     build_folder_structure();
 
@@ -66,9 +70,9 @@ pub fn main() {
 
     // Allows you to create a new Crowdfunding Campaign
     if args.cmd_create {
-        let name = acquire_project_name();
+        let name = acquire_campaign_name();
         let address = select_wallet_address(&api_key);
-        let camp = Campaign::new(&name, &address, &args.arg_project_deadline, &args.arg_project_goal);
+        let camp = Campaign::new(&name, &address, &args.arg_campaign_deadline, &args.arg_campaign_goal);
         camp.clone().save_locally();
         camp.clone().export();
         clear_and_title(&terminal);
@@ -78,7 +82,7 @@ pub fn main() {
 
     // Allows you to track a Crowdfunding Campaign
     // if args.cmd_track {
-        // let camp = Campaign::new(&"First Campaign".to_string(), &args.arg_project_pubkey, &args.arg_project_deadline, &args.arg_project_goal, false);
+    //     let camp = Campaign::new(&args.arg_campaign_name, &args.arg_addresskey, &args.arg_campaign_deadline, &args.arg_campaign_goal, false);
     // }
 
 
@@ -87,7 +91,8 @@ pub fn main() {
         // }
 
     // Allows you to interact with one of the tracked Crowdfunding Campaigns
-    // if args.cmd_interact {
+    // if args.cmd_back {
+        // choose_local_campaign();
         // }
 }
 

@@ -66,7 +66,7 @@ pub fn get_wallet_addresses(api_key: &String) -> Vec<String> {
 }
 
 /// Get P2S Address for Backer to submit to for the Campaign
-pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &String) -> String {
+pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &String) -> String {
     let endpoint = "http://0.0.0.0:9052/script/p2sAddress";
     let client = reqwest::Client::new();
     let hapi_key = HeaderValue::from_str(&api_key).expect("Failed to create header value from api key.");
@@ -74,7 +74,7 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_pub_key: &
                 .header("accept", "application/json")
                 .header("api_key", hapi_key)
                 .header(CONTENT_TYPE, "application/json")
-                .body(campaign.build_script(backer_pub_key))
+                .body(campaign.build_script(backer_address))
                 .send()
                 .expect("Failed to send request to local node. Please make sure it is running on API port 9052.");
 
