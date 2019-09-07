@@ -106,11 +106,12 @@ pub fn main() {
     generate_default_node_ip_file();
 
     // Get basic values
+    let mut terminal = terminal();
+    clear_and_title(&terminal);
     let args: Args = Docopt::new(USAGE)
     .and_then(|d| d.deserialize())
     .unwrap_or_else(|e| e.exit());
     let api_key = check_for_api_key();
-    let mut terminal = terminal();
 
     clear_and_title(&terminal);
 
