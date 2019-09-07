@@ -119,5 +119,10 @@ pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> O
     let mut tx_id = res.ok()?.text().ok()?;
     tx_id.retain(|c| c != '"');
 
+    if tx_id.contains("bad.request") {
+        println!("Failed to make payment. This is the error from the ergo node/wallet:\n{}", tx_id);
+        std::process::exit(0);
+    }
+
     return Some(BackingTx::new(tx_id, amount));
 }
