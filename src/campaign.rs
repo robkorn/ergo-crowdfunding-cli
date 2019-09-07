@@ -26,8 +26,8 @@ pub enum Camp {
 pub struct Campaign {
    pub name: String,
    pub address: String,
-   pub deadline: u32,
-   pub goal: u32,
+   pub deadline: u64,
+   pub goal: u64,
 }
 
 /// Datatype which holds a `Campaign` and relevant information about the campaign as a backer. Struct only created after a user has backed a campaign.
@@ -43,14 +43,14 @@ pub struct BackedCampaign {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BackingTx {
     pub tx_id: String,
-    pub backed_amount: u32
+    pub backed_amount: u64
 }
 
 impl Campaign {
-    /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u32` integers
+    /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u64` integers
     pub fn new (name : &String, address: &String, deadline: &String, goal: &String) -> Campaign{
-        let deadline : u32 = deadline.parse().expect("Deadline provided is not a valid integer.");
-        let goal : u32 = goal.parse().expect("campaign goal provided is not a valid integer.");
+        let deadline : u64 = deadline.parse().expect("Deadline provided is not a valid integer.");
+        let goal : u64 = goal.parse().expect("campaign goal provided is not a valid integer.");
         Campaign {
             name: name.clone(),
             address: address.clone(),
@@ -79,7 +79,7 @@ impl Campaign {
     }
 
     /// Allows the user to back the Campaign
-    pub fn back_campaign(self, api_key: &String, amount: u32) -> BackedCampaign {
+    pub fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
         let backer_address = select_wallet_address(&api_key);
         let p2s_address = get_p2s_address(&api_key, &self, &backer_address);
         let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
@@ -131,7 +131,7 @@ impl BackedCampaign {
     }
 
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
-    pub fn back_campaign(self, api_key: &String, amount: u32) -> BackedCampaign {
+    pub fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
         let backer_address = select_wallet_address(&api_key);
         let p2s_address = get_p2s_address(&api_key, &self.campaign, &backer_address);
         let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
@@ -181,7 +181,7 @@ impl BackedCampaign {
 }
 
 impl BackingTx {
-    pub fn new(tx_id: String, backed_amount: u32) -> BackingTx {
+    pub fn new(tx_id: String, backed_amount: u64) -> BackingTx {
         BackingTx {tx_id: tx_id, backed_amount: backed_amount}
     }
 }

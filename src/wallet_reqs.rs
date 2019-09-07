@@ -99,8 +99,8 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &
 }
 
 /// Send payment from unlocked wallet to given address via local node api. Returns the box identifier.
-pub fn send_wallet_payment(api_key: &String, address: &String, amount: u32) -> Option<BackingTx> {
-    let nanoerg_amount = amount * 1000000000;
+pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> Option<BackingTx> {
+    let nanoerg_amount : u64 = amount * 1000000000;
     let json_body = json!({ "address": address,
                             "value": nanoerg_amount });
     let reg = Handlebars::new();
