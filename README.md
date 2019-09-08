@@ -1,4 +1,4 @@
-# Ergo Crowdfunding CLI Tl
+# Ergo Crowdfunding CLI Tool
 
 The Ergo Crowdfunding CLI tool allows you to participate and interact with Crowdfunding Campaigns on Ergo easily.
 
