@@ -1,6 +1,6 @@
-# Ergo Crowdfunding CLI
+# Ergo Crowdfunding CLI Tl
 
-The Ergo Crowdfunding CLI app allows you to participate and interact with Crowdfunding Campaigns on Ergo easily.
+The Ergo Crowdfunding CLI tool allows you to participate and interact with Crowdfunding Campaigns on Ergo easily.
 
 
 ```
@@ -15,7 +15,7 @@ Usage:
 
 ## How It Works
 
-In order to interact with a campaign you first need to track it inside of the CLI app. You have three ways of doing so:
+In order to interact with a campaign you first need to track it inside of the CLI tool. You have three ways of doing so:
  - You `create` a new campaign locally (which you can then share with others)
  - You `import` an already created campaign via file which somebody else already created/exported
  - You `track` an already created campaign by manually inputting the relevant data.
@@ -61,7 +61,7 @@ Which campaign would you like to select?
 
 Then afterwards how many Erg you wish to send. 
 
-Once that is all submitted then the app will then do the rest to back the Campaign. It fills in the Crowdfund script for you, generates the P2S Address via a POST to your running & unlocked node/wallet, and then submits the transaction to the P2S Address thusly participating and backing the campaign. If successful you will see something similar to the information below:
+Once that is all submitted then the Crowdfund tool will then do the rest to back the Campaign. It fills in the Crowdfund script for you, generates the P2S Address via a POST to your running & unlocked node/wallet, and then submits the transaction to the P2S Address thusly participating and backing the campaign. If successful you will see something similar to the information below:
 
 ```
 Ergo Crowdfund CLI
@@ -86,17 +86,17 @@ This information is then saved locally and is available at any time by calling `
  ```
  git clone https://github.com/robkorn/ergo-crowdfunding-cli
  ```
- 3. Run the `build_release.sh` script to compile the app:
+ 3. Run the `build_release.sh` script to compile the tool:
  ```
  sh build_release.sh
  ```
- 4. Enter the newly created `ergo_cf_release` folder and use the app from here. (You are free to move the folder after compiling, but you need to keep the binary in the folder because the app saves some local state there too.)
+ 4. Enter the newly created `ergo_cf_release` folder and use the CLI tool from here. (You are free to move the folder after compiling, but you need to keep the binary in the folder because the Crowdfund tool saves some local state there too.)
  ```
  cd ergo_cf_release
  ./ergo_cf create 50000 500
  ```
  5. Upon first running you will be asked to enter your api key for sending requests to your node. Fill it out accordingly.
- 6. Lastly, the app assumes you have your node running locally via API port `9052`. If that is not the case then edit the `node.ip` file with the correct ip/port to access your node. (And make sure your wallet is unlocked as well.)
+ 6. Lastly, the Crowdfund tool assumes you have your node running locally via API port `9052`. If that is not the case then edit the `node.ip` file with the correct ip/port to access your node. (And make sure your wallet is unlocked as well.)
  7. Enjoy creating and participating in Crowdfunding campaigns on Ergo.
 
 
