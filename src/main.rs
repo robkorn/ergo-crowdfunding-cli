@@ -19,7 +19,7 @@ use wallet_reqs::{select_wallet_address};
 const USAGE: &'static str = "
 Usage: 
         ergo_cf back
-        ergo_cf create <campaign-deadline> <campaign-goal> 
+        ergo_cf create <campaign-name> <campaign-deadline> <campaign-goal>
         ergo_cf delete
         ergo_cf info
         ergo_cf import <file-path>
@@ -119,9 +119,8 @@ pub fn main() {
 
     // Allows you to create a new Crowdfunding Campaign
     if args.cmd_create {
-        let name = acquire_campaign_name();
         let address = select_wallet_address(&api_key);
-        let camp = Campaign::new(&name, &address, &args.arg_campaign_deadline, &args.arg_campaign_goal);
+        let camp = Campaign::new(&args.arg_campaign_name, &address, &args.arg_campaign_deadline, &args.arg_campaign_goal);
         camp.clone().save_locally();
         camp.clone().export();
         clear_and_title(&terminal);
