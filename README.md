@@ -25,6 +25,7 @@ Once a campaign is tracked via one of three above methods you can then interact 
  - Using `back` to send Erg to the P2S address generated for locking your funds under the Crowdfund Script
  - Using `info` to display information about a tracked campaign (including previous backing txs if you backed it before)
  - Using `export` to export a tracked campaign into a file in the `export` folder which you can then share with others.
+ - Using `delete` to delete a tracked campaign from local storage.
 
 ## Example - How To Use
 
