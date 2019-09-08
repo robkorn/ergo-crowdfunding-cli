@@ -20,6 +20,7 @@ const USAGE: &'static str = "
 Usage: 
         ergo_cf back
         ergo_cf create <campaign-deadline> <campaign-goal> 
+        ergo_cf delete
         ergo_cf info
         ergo_cf import <file-path>
         ergo_cf export
@@ -30,6 +31,7 @@ Usage:
 struct Args {
     cmd_back: bool,
     cmd_create: bool,
+    cmd_delete: bool,
     cmd_track: bool,
     cmd_info: bool,
     cmd_import: bool,
@@ -73,7 +75,7 @@ fn acquire_campaign_name() -> String {
 /// Clear terminal screen and print title
 fn clear_and_title(terminal: &crossterm::Terminal) {
     terminal.clear(ClearType::All);
-    println!("Ergo Crowdfund CLI\n------------------");
+    println!("Ergo Crowdfund CLI Tool\n-----------------------");
 }
 
 /// Track Campagin
@@ -154,6 +156,15 @@ pub fn main() {
         let camp = choose_local_campaign();
         if let Camp::Backed(bc) = camp {bc.export()}
         else if let Camp::NotBacked(c) = camp {c.export()}
+    }
+
+
+    // Allows deletion of tracked Campaign
+    if args.cmd_delete {
+        println!("Delete A Tracked Campaign\n----------------------");
+        let camp = choose_local_campaign();
+        if let Camp::Backed(bc) = camp {bc.delete()}
+        else if let Camp::NotBacked(c) = camp {c.delete()}
     }
 
     // Allows you to back one of the tracked Crowdfunding Campaigns

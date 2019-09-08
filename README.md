@@ -7,6 +7,7 @@ The Ergo Crowdfunding CLI tool allows you to participate and interact with Crowd
 Usage: 
         ergo_cf back
         ergo_cf create <campaign-deadline> <campaign-goal> 
+        ergo_cf delete
         ergo_cf info
         ergo_cf import <file-path>
         ergo_cf export

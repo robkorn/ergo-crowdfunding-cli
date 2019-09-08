@@ -2,7 +2,7 @@ use crate::wallet_reqs::{select_wallet_address, get_p2s_address, send_wallet_pay
 use handlebars::Handlebars;
 use serde::{Serialize, Deserialize};
 use std::path::Path;
-use std::fs::{File, read_dir};
+use std::fs::{File, read_dir, remove_file};
 
 static CROWDFUND_TEMPLATE : &'static str = r#"{"source": "{ val backerPubKey = PK(\"{{backer}}\") \n val projectPubKey = PK(\"{{address}}\") \n val deadline = {{deadline}} \n val minToRaise = {{goal}}L * 1000000000 \n val fundraisingFailure = HEIGHT >= deadline && backerPubKey \n val enoughRaised = {(outBox: Box) => outBox.value >= minToRaise && outBox.propositionBytes == projectPubKey.propBytes} \n val fundraisingSuccess = HEIGHT < deadline && projectPubKey && OUTPUTS.exists(enoughRaised) \n fundraisingFailure || fundraisingSuccess }"}"#;
 
@@ -59,6 +59,16 @@ impl Campaign {
         } 
     }
 
+    /// Deletes the tracked Campaign from local storage
+    pub fn delete (&self) {
+        let mut path = CAMPAIGNS_FOLDER.to_string();
+        path.push_str(&self.name);
+        path.push_str(".campaign");
+        clean_path_name(&mut path);
+        println!("{}: {:?}", path.clone(), remove_file(path).ok());
+
+    }
+
     /// Create a new `Campaign` from a previously exported `Campaign`
     pub fn from_file (path: &String) -> Campaign {
         let file = File::open(path).expect("Failed to read Campaign file.");
@@ -97,7 +107,7 @@ impl Campaign {
     fn save(self, path: &mut String) {
         path.push_str(&self.name);
         path.push_str(".campaign");
-        path.retain(|c| c != '\n' && c != ' ');
+        clean_path_name(path);
         let file = File::create(path.trim()).expect("Failed to create Campaign file.");
         serde_json::to_writer_pretty(file, &self).expect("Failed to save Campaign to file.");
     }
@@ -128,6 +138,12 @@ impl BackedCampaign {
                             p2s_address: p2s_address,
                             backer_txs: backer_txs
                         }
+    }
+
+
+    /// Deletes the tracked Campaign from local storage
+    pub fn delete (&self) {
+        self.campaign.delete();
     }
 
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
@@ -162,7 +178,7 @@ impl BackedCampaign {
     fn save(self, path: &mut String) {
         path.push_str(&self.campaign.name);
         path.push_str(".campaign");
-        path.retain(|c| c != '\n' && c != ' ');
+        clean_path_name(path);
         let file = File::create(path.trim()).expect("Failed to create Backed Campaign file.");
         serde_json::to_writer_pretty(file, &self).expect("Failed to save Backed Campaign to file.");
         println!("Campaign saved locally.");
@@ -239,4 +255,9 @@ pub fn get_local_campaigns() -> Vec<Camp> {
         }
     }
     campaigns
+}
+
+
+fn clean_path_name (path: &mut String) {
+    path.retain(|c| c != '\n' && c != ' ')
 }
