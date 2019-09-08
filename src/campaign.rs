@@ -65,8 +65,7 @@ impl Campaign {
         path.push_str(&self.name);
         path.push_str(".campaign");
         clean_path_name(&mut path);
-        println!("{}: {:?}", path.clone(), remove_file(path).ok());
-
+        remove_file(path).ok();
     }
 
     /// Create a new `Campaign` from a previously exported `Campaign`
@@ -203,7 +202,7 @@ impl BackingTx {
 }
 
 /// Choose a campaign from those which are locally saved
-pub fn choose_local_campaign() -> Camp {
+pub fn choose_local_campaign(action_string: &String) -> Camp {
     let camps = get_local_campaigns();
     if camps.len() == 0 {
         println!("You have no local Campaigns. Please create or track a Campaign first to interact with one."); 
@@ -219,19 +218,23 @@ pub fn choose_local_campaign() -> Camp {
             println!("{}. {}", n, c.name);
         }
     }
-    println!("\nWhich campaign would you like to select?");
+
+    // Making the campaign selection text more context dependent.
+    println!("\nWhich campaign would you like to {}?", action_string);
+
+
+    // Get Campaign based on choice
     let mut input = String::new();
     if let Ok(_) = std::io::stdin().read_line(&mut input){
         if let Ok(input_n) = input.trim().parse::<usize>(){
             if input_n > get_local_campaigns().len() || input_n < 1 {
                 println!("Please select a campaign within the range.");
-                return choose_local_campaign();
+                return choose_local_campaign(action_string);
             }
             return camps[input_n-1].clone();
         }
     }
-    return choose_local_campaign();
-
+    return choose_local_campaign(action_string);
 }
 
 /// Get a vector of the locally stored `Campaign`s and `BackedCampaign`s

@@ -136,7 +136,7 @@ pub fn main() {
 
     // Provides info about a tracked Crowdfunding Campaign
     if args.cmd_info {
-        let camp = choose_local_campaign();
+        let camp = choose_local_campaign(&"see more information about".to_string());
         clear_and_title(&terminal);
         match camp {
             Camp::NotBacked(c) => c.print_info(),
@@ -152,7 +152,7 @@ pub fn main() {
 
     // Allows you to export a Crowdfunding Campaign to a file
     if args.cmd_export {
-        let camp = choose_local_campaign();
+        let camp = choose_local_campaign(&"export".to_string());
         if let Camp::Backed(bc) = camp {bc.export()}
         else if let Camp::NotBacked(c) = camp {c.export()}
     }
@@ -160,15 +160,14 @@ pub fn main() {
 
     // Allows deletion of tracked Campaign
     if args.cmd_delete {
-        println!("Delete A Tracked Campaign\n----------------------");
-        let camp = choose_local_campaign();
+        let camp = choose_local_campaign(&"delete".to_string());
         if let Camp::Backed(bc) = camp {bc.delete()}
         else if let Camp::NotBacked(c) = camp {c.delete()}
     }
 
     // Allows you to back one of the tracked Crowdfunding Campaigns
     if args.cmd_back {
-        let camp = choose_local_campaign();
+        let camp = choose_local_campaign(&"back".to_string());
         clear_and_title(&terminal);
         if let Camp::NotBacked(c) = camp {
             c.clone().print_info();
