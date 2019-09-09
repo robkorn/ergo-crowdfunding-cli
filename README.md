@@ -44,7 +44,7 @@ Campaign Deadline Block: 50000
 Campaign Goal: 500
 
 ```
-At any point if you wish to see the information above again about the campaign you can always use `info`.
+At any point if you wish to see the information above again about the Campaign you can always use `info`.
 
 We will now proceed to back the Crowdfund Campaign and send 1 Erg.
 ```
@@ -106,7 +106,7 @@ This information is then saved locally and is available at any time by calling `
 ### Notes
 
  - Currently a backer may only send whole integer value amounts of Erg to a campaign.
- - Currently there is no interface for a creator of a Campaign to check if it has succeeded nor to collected all of the funds upon success
+ - Currently there is no interface for a creator of a Campaign to check if it has succeeded nor collect all of the funds upon success
 
 More features/updates are to come, especially when [EIP-1](https://github.com/ergoplatform/eips/blob/master/eip-0001.md) is finished.
 
