@@ -166,6 +166,7 @@ pub fn main() {
     }
 
     // Allows you to back one of the tracked Crowdfunding Campaigns
+    // Eventually implement a Campaign trait to not have code repeat
     if args.cmd_back {
         let camp = choose_local_campaign(&"back".to_string());
         clear_and_title(&terminal);
