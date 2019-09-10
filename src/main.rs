@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, Campaign, Camp, choose_local_campaign};
+use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, CrowdfundingCampaign, Campaign, Camp, choose_local_campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -85,6 +85,16 @@ fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
     println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
     camp.print_info();
 
+}
+
+/// Back Campaign
+fn back_campaign<CC: CrowdfundingCampaign + Clone> (c: &CC, &terminal: &crossterm::Terminal, api_key: &String) {
+        c.clone().print_info();
+        let back_amount = query_amount();
+        clear_and_title(&terminal);
+        let backed_camp = c.back_campaign(&api_key, back_amount);
+        clear_and_title(&terminal);
+        backed_camp.print_info();
 }
 
 /// Asks user for an amount
@@ -171,21 +181,11 @@ pub fn main() {
         let camp = choose_local_campaign(&"back".to_string());
         clear_and_title(&terminal);
         if let Camp::NotBacked(c) = camp {
-            c.clone().print_info();
-            let back_amount = query_amount();
-            clear_and_title(&terminal);
-            let backed_camp = c.back_campaign(&api_key, back_amount);
-            clear_and_title(&terminal);
-            backed_camp.print_info();
+            back_campaign(&c, &terminal, &api_key);
 
         }
         else if let Camp::Backed(bc) = camp {
-            bc.clone().print_info();
-            let back_amount = query_amount();
-            clear_and_title(&terminal);
-            let backed_camp = bc.back_campaign(&api_key, back_amount);
-            clear_and_title(&terminal);
-            backed_camp.print_info();
+            back_campaign(&bc, &terminal, &api_key);
         }
     }
 }

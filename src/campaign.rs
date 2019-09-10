@@ -44,6 +44,13 @@ pub struct BackingTx {
     pub backed_amount: u64
 }
 
+pub trait CrowdfundingCampaign {
+    fn print_info(&self);
+    fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign;
+}
+
+
+
 impl Campaign {
     /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u64` integers
     pub fn new (name : &String, address: &String, deadline: &String, goal: &String) -> Campaign{
@@ -85,21 +92,6 @@ impl Campaign {
         finalized_script.expect("Failed to produce crowdfunding script.")
     }
 
-    /// Allows the user to back the Campaign
-    pub fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
-        let backer_address = select_wallet_address(&api_key);
-        let p2s_address = get_p2s_address(&api_key, &self, &backer_address);
-        let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
-
-        if let Some(bt) = backing_tx {
-            let backer_txs = vec![bt];
-            let backed_camp = BackedCampaign::new(self, backer_address, p2s_address, backer_txs);
-            backed_camp.clone().save_locally();
-            return backed_camp;
-        }
-        panic!("Failed to send wallet payment to P2S Address.");
-    }
-
     /// Saves `Campaign` to path
     fn save(self, path: &mut String) {
         path.push_str(&self.name);
@@ -121,10 +113,6 @@ impl Campaign {
         self.save(&mut path);
     }
 
-    /// Prints info about the Campaign
-    pub fn print_info(&self) {
-        println!("Campaign Name: {}\nCampaign Address: {}\nCampaign Deadline Block: {}\nCampaign Goal: {}", self.name, self.address, self.deadline, self.goal);
-    }
 }
 
 impl BackedCampaign {
@@ -142,34 +130,6 @@ impl BackedCampaign {
     pub fn delete (&self) {
         self.campaign.delete();
     }
-
-    // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
-    pub fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
-        let backer_address = select_wallet_address(&api_key);
-        let p2s_address = get_p2s_address(&api_key, &self.campaign, &backer_address);
-        let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
-
-        if let Some(bt) = backing_tx {
-            let mut backer_txs = self.backer_txs;
-            backer_txs.push(bt);
-            let backed_camp = BackedCampaign::new(self.campaign, backer_address, p2s_address, backer_txs);
-            backed_camp.clone().save_locally();
-            return backed_camp;
-        }
-        panic!("Failed to send wallet payment to P2S Address.");
-
-    }
-
-
-    /// Prints info about the `BackedCampaign`
-    pub fn print_info(&self) {
-        self.campaign.print_info();
-        println!("Address You Used To Back: {}\nP2S Address Paid To: {}\nBacking Txs:", self.backer_address, self.p2s_address);
-        for tx in &self.backer_txs{
-            println!("   - {}: {} Erg", tx.tx_id, tx.backed_amount);
-        }
-    }
-
 
     /// Saves the `BackedCampaign` to path
     fn save(self, path: &mut String) {
@@ -193,11 +153,71 @@ impl BackedCampaign {
     }
 }
 
+
+impl CrowdfundingCampaign for Campaign {
+
+    /// Allows the user to back the Campaign
+    fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
+        let backer_address = select_wallet_address(&api_key);
+        let p2s_address = get_p2s_address(&api_key, &self, &backer_address);
+        let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
+
+        if let Some(bt) = backing_tx {
+            let backer_txs = vec![bt];
+            let backed_camp = BackedCampaign::new(self, backer_address, p2s_address, backer_txs);
+            backed_camp.clone().save_locally();
+            return backed_camp;
+        }
+        panic!("Failed to send wallet payment to P2S Address.");
+    }
+
+
+    /// Prints info about the Campaign
+    fn print_info(&self) {
+        println!("Campaign Name: {}\nCampaign Address: {}\nCampaign Deadline Block: {}\nCampaign Goal: {}", self.name, self.address, self.deadline, self.goal);
+    }
+}
+
+
+impl CrowdfundingCampaign for BackedCampaign {
+
+    // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
+    fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
+        let backer_address = select_wallet_address(&api_key);
+        let p2s_address = get_p2s_address(&api_key, &self.campaign, &backer_address);
+        let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
+
+        if let Some(bt) = backing_tx {
+            let mut backer_txs = self.backer_txs;
+            backer_txs.push(bt);
+            let backed_camp = BackedCampaign::new(self.campaign, backer_address, p2s_address, backer_txs);
+            backed_camp.clone().save_locally();
+            return backed_camp;
+        }
+        panic!("Failed to send wallet payment to P2S Address.");
+
+    }
+
+
+    /// Prints info about the `BackedCampaign`
+    fn print_info(&self) {
+        self.campaign.print_info();
+        println!("Address You Used To Back: {}\nP2S Address Paid To: {}\nBacking Txs:", self.backer_address, self.p2s_address);
+        for tx in &self.backer_txs{
+            println!("   - {}: {} Erg", tx.tx_id, tx.backed_amount);
+        }
+    }
+}
+
 impl BackingTx {
     pub fn new(tx_id: String, backed_amount: u64) -> BackingTx {
         BackingTx {tx_id: tx_id, backed_amount: backed_amount}
     }
 }
+
+
+
+
 
 /// Choose a campaign from those which are locally saved
 pub fn choose_local_campaign(action_string: &String) -> Camp {
