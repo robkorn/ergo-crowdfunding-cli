@@ -1,4 +1,4 @@
-use crate::campaign::{Campaign, BackingTx};
+use crate::campaign::{CrowdfundingCampaign, Campaign, BackingTx};
 use handlebars::Handlebars;
 use reqwest;
 use reqwest::header::{HeaderValue, CONTENT_TYPE};

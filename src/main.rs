@@ -88,11 +88,11 @@ fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
 }
 
 /// Back Campaign
-fn back_campaign<CC: CrowdfundingCampaign + Clone> (c: &CC, &terminal: &crossterm::Terminal, api_key: &String) {
+fn back_campaign<CC: CrowdfundingCampaign + Clone> (c: &CC, terminal: &crossterm::Terminal, api_key: &String) {
         c.clone().print_info();
         let back_amount = query_amount();
         clear_and_title(&terminal);
-        let backed_camp = c.back_campaign(&api_key, back_amount);
+        let backed_camp = c.clone().back_campaign(&api_key, back_amount);
         clear_and_title(&terminal);
         backed_camp.print_info();
 }

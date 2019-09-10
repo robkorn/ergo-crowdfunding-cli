@@ -12,6 +12,18 @@ pub static CAMPAIGNS_FOLDER : &'static str = concat!(STORAGE_FOLDER!(), "campaig
 pub static EXPORT_FOLDER : &'static str = "export/";
 
 
+pub trait CrowdfundingCampaign {
+    fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign;
+    fn build_script(&self, backer_address: &String) -> String;
+    fn export(self);
+    fn delete(&self);
+    fn save(self, path: &mut String);
+    fn save_locally(self);
+    fn from_file (path: &String) -> Self;
+    fn print_info(&self);
+}
+
+
 /// Enum for returning either a backed or not backed Campaign
 #[derive(Clone)]
 pub enum Camp {
@@ -44,13 +56,6 @@ pub struct BackingTx {
     pub backed_amount: u64
 }
 
-pub trait CrowdfundingCampaign {
-    fn print_info(&self);
-    fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign;
-}
-
-
-
 impl Campaign {
     /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u64` integers
     pub fn new (name : &String, address: &String, deadline: &String, goal: &String) -> Campaign{
@@ -64,23 +69,26 @@ impl Campaign {
         } 
     }
 
-    /// Deletes the tracked Campaign from local storage
-    pub fn delete (&self) {
-        let mut path = CAMPAIGNS_FOLDER.to_string();
-        path.push_str(&self.name);
-        path.push_str(".campaign");
-        clean_path_name(&mut path);
-        remove_file(path).ok();
+}
+
+impl BackedCampaign {
+    /// Create a new `BackedCampaign`. 
+    pub fn new (campaign : Campaign, backer_address: String, p2s_address: String, backer_txs: Vec<BackingTx>) -> BackedCampaign { 
+        BackedCampaign  {   campaign: campaign,
+                            backer_address: backer_address,
+                            p2s_address: p2s_address,
+                            backer_txs: backer_txs
+                        }
     }
 
-    /// Create a new `Campaign` from a previously exported `Campaign`
-    pub fn from_file (path: &String) -> Campaign {
-        let file = File::open(path).expect("Failed to read Campaign file.");
-        serde_json::from_reader(file).expect("Failed to process Campaign from json.")
-    }
+
+}
+
+
+impl CrowdfundingCampaign for Campaign {
 
     /// Builds the crowdfunding script with the required fields filled in
-    pub fn build_script(&self, backer_address: &String) -> String {
+    fn build_script(&self, backer_address: &String) -> String {
         let reg = Handlebars::new();
         let finalized_script = reg.render_template(CROWDFUND_TEMPLATE, 
         &json!({"backer": backer_address
@@ -102,59 +110,33 @@ impl Campaign {
     }
 
     /// Save the `Campaign` locally into a json file in the Campaigns folder
-    pub fn save_locally(self) {
+    fn save_locally(self) {
         let mut path = CAMPAIGNS_FOLDER.to_string();
         self.save(&mut path);
     }
 
+    /// Create a new `Campaign` from a previously exported `Campaign`
+    fn from_file (path: &String) -> Campaign {
+        let file = File::open(path).expect("Failed to read Campaign file.");
+        serde_json::from_reader(file).expect("Failed to process Campaign from json.")
+    }
+
+
     /// Exports the `Campaign` into a json file to be shared in the export folder
-    pub fn export(self) {
+    fn export(self) {
         let mut path = EXPORT_FOLDER.to_string();
         self.save(&mut path);
     }
 
-}
-
-impl BackedCampaign {
-    /// Create a new `BackedCampaign`. 
-    pub fn new (campaign : Campaign, backer_address: String, p2s_address: String, backer_txs: Vec<BackingTx>) -> BackedCampaign { 
-        BackedCampaign  {   campaign: campaign,
-                            backer_address: backer_address,
-                            p2s_address: p2s_address,
-                            backer_txs: backer_txs
-                        }
-    }
-
-
     /// Deletes the tracked Campaign from local storage
-    pub fn delete (&self) {
-        self.campaign.delete();
-    }
-
-    /// Saves the `BackedCampaign` to path
-    fn save(self, path: &mut String) {
-        path.push_str(&self.campaign.name);
-        path.push_str(".campaign");
-        clean_path_name(path);
-        let file = File::create(path.trim()).expect("Failed to create Backed Campaign file.");
-        serde_json::to_writer_pretty(file, &self).expect("Failed to save Backed Campaign to file.");
-        println!("Campaign saved locally.");
-    }
-
-    /// Save the `BackedCampaign` locally into a json file in the Campaigns folder
-    pub fn save_locally(self) {
+    fn delete (&self) {
         let mut path = CAMPAIGNS_FOLDER.to_string();
-        self.save(&mut path);
+        path.push_str(&self.name);
+        path.push_str(".campaign");
+        clean_path_name(&mut path);
+        remove_file(path).ok();
     }
 
-    /// Exports the `Campaign` from the `BackedCampaign` to Export folder
-    pub fn export(self) {
-        self.campaign.export();
-    }
-}
-
-
-impl CrowdfundingCampaign for Campaign {
 
     /// Allows the user to back the Campaign
     fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
@@ -181,6 +163,43 @@ impl CrowdfundingCampaign for Campaign {
 
 impl CrowdfundingCampaign for BackedCampaign {
 
+    fn build_script(&self, backer_address: &String) -> String {
+        self.campaign.build_script(backer_address)
+    }
+
+    /// Saves the `BackedCampaign` to path
+    fn save(self, path: &mut String) {
+        path.push_str(&self.campaign.name);
+        path.push_str(".campaign");
+        clean_path_name(path);
+        let file = File::create(path.trim()).expect("Failed to create Backed Campaign file.");
+        serde_json::to_writer_pretty(file, &self).expect("Failed to save Backed Campaign to file.");
+        println!("Campaign saved locally.");
+    }
+
+    /// Save the `BackedCampaign` locally into a json file in the Campaigns folder
+    fn save_locally(self) {
+        let mut path = CAMPAIGNS_FOLDER.to_string();
+        self.save(&mut path);
+    }
+
+
+    /// Create a new `BackedCampaign` from file
+    fn from_file (path: &String) -> BackedCampaign {
+        let file = File::open(path).expect("Failed to read BackedCampaign file.");
+        serde_json::from_reader(file).expect("Failed to process BackedCampaign from json.")
+    }
+
+    /// Exports the `Campaign` from the `BackedCampaign` to Export folder
+    fn export(self) {
+        self.campaign.export();
+    }
+
+    /// Deletes the tracked Campaign from local storage
+    fn delete (&self) {
+        self.campaign.delete();
+    }
+
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
     fn back_campaign(self, api_key: &String, amount: u64) -> BackedCampaign {
         let backer_address = select_wallet_address(&api_key);
@@ -197,7 +216,6 @@ impl CrowdfundingCampaign for BackedCampaign {
         panic!("Failed to send wallet payment to P2S Address.");
 
     }
-
 
     /// Prints info about the `BackedCampaign`
     fn print_info(&self) {
