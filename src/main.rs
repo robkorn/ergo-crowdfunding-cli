@@ -7,7 +7,7 @@ mod campaign;
 mod wallet_reqs;
 
 use api_key::{check_for_api_key};
-use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, CrowdfundingCampaign, Campaign, Camp, choose_local_campaign};
+use campaign::{EXPORT_FOLDER, CAMPAIGNS_FOLDER, CrowdfundingCampaign, Campaign, choose_local_campaign};
 use crossterm::{terminal,ClearType};
 use docopt::Docopt;
 use serde::{Deserialize};
@@ -88,11 +88,11 @@ fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
 }
 
 /// Back Campaign
-fn back_campaign<CC: CrowdfundingCampaign + Clone> (c: &CC, terminal: &crossterm::Terminal, api_key: &String) {
-        c.clone().print_info();
+fn back_campaign (c: Box<CrowdfundingCampaign>, terminal: &crossterm::Terminal, api_key: &String) {
+        c.print_info();
         let back_amount = query_amount();
         clear_and_title(&terminal);
-        let backed_camp = c.clone().back_campaign(&api_key, back_amount);
+        let backed_camp = c.back_campaign(&api_key, back_amount);
         clear_and_title(&terminal);
         backed_camp.print_info();
 }
@@ -146,12 +146,10 @@ pub fn main() {
 
     // Provides info about a tracked Crowdfunding Campaign
     if args.cmd_info {
-        let camp = choose_local_campaign(&"see more information about".to_string());
+        let text = "see more information about".to_string();
+        let camp = choose_local_campaign(&text);
         clear_and_title(&terminal);
-        match camp {
-            Camp::NotBacked(c) => c.print_info(),
-            Camp::Backed(bc) => bc.print_info()
-        }
+        camp.print_info();
     }
 
     // Allows you to import a Crowdfunding Campaign from a file
@@ -162,31 +160,26 @@ pub fn main() {
 
     // Allows you to export a Crowdfunding Campaign to a file
     if args.cmd_export {
-        let camp = choose_local_campaign(&"export".to_string());
-        if let Camp::Backed(bc) = camp {bc.export()}
-        else if let Camp::NotBacked(c) = camp {c.export()}
+        let text = "export".to_string();
+        let camp = choose_local_campaign(&text);
+        camp.export();
     }
 
 
     // Allows deletion of tracked Campaign
     if args.cmd_delete {
-        let camp = choose_local_campaign(&"delete".to_string());
-        if let Camp::Backed(bc) = camp {bc.delete()}
-        else if let Camp::NotBacked(c) = camp {c.delete()}
+        let text = "delete".to_string();
+        let camp = choose_local_campaign(&text);
+        camp.delete();
     }
 
     // Allows you to back one of the tracked Crowdfunding Campaigns
     // Eventually implement a Campaign trait to not have code repeat
     if args.cmd_back {
-        let camp = choose_local_campaign(&"back".to_string());
+        let text = "back".to_string();
+        let camp = choose_local_campaign(&text);
         clear_and_title(&terminal);
-        if let Camp::NotBacked(c) = camp {
-            back_campaign(&c, &terminal, &api_key);
-
-        }
-        else if let Camp::Backed(bc) = camp {
-            back_campaign(&bc, &terminal, &api_key);
-        }
+        back_campaign(camp, &terminal, &api_key);
     }
 }
 
