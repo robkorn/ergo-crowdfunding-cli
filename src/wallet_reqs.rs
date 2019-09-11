@@ -100,9 +100,8 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &
 
 /// Send payment from unlocked wallet to given address via local node api. Returns the box identifier.
 pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> Option<BackingTx> {
-    let nanoerg_amount : u64 = amount * 1000000000;
     let json_body = json!({ "address": address,
-                            "value": nanoerg_amount });
+                            "value": erg_to_nanoerg(amount) });
     let reg = Handlebars::new();
 
     let pb = reg.render_template(SEND_PAYMENT_TEMPLATE, &json_body).ok()?;
@@ -125,4 +124,21 @@ pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> O
     }
 
     return Some(BackingTx::new(tx_id, amount));
+}
+
+/// Convert from whole erg to nano_erg
+pub fn erg_to_nanoerg(erg_amount: u64) -> u64 {
+    erg_amount * 1000000000
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn erg_conv_is_valid() {
+        assert_eq!(1000000000, erg_to_nanoerg(1));
+        assert_eq!(15000000000, erg_to_nanoerg(15));
+    }
 }

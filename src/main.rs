@@ -96,7 +96,7 @@ pub fn main() {
     generate_default_node_ip_file();
 
     // Get basic values
-    let mut terminal = terminal();
+    let terminal = terminal();
     clear_and_title(&terminal);
     let args: Args = Docopt::new(USAGE)
     .and_then(|d| d.deserialize())
