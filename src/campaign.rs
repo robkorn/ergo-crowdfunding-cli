@@ -52,7 +52,7 @@ impl Campaign {
     /// Create a new `Campaign`. Verifies that the deadline and the goal are valid `u64` integers
     pub fn new (name : &String, address: &String, deadline: &String, goal: &String) -> Campaign{
         let deadline : u64 = deadline.parse().expect("Deadline provided is not a valid integer.");
-        let goal : u64 = goal.parse().expect("campaign goal provided is not a valid integer.");
+        let goal : u64 = goal.parse().expect("Campaign goal provided is not a valid integer.");
         Campaign {
             name: name.clone(),
             address: address.clone(),

@@ -60,18 +60,6 @@ fn generate_default_node_ip_file() {
     }
 }
 
-/// Ask the user for campaign name
-fn acquire_campaign_name() -> String {
-    println!("Please enter a name for your new Crowdfund Campaign:");
-    let mut input = String::new();
-    if let Ok(_) = std::io::stdin().read_line(&mut input) {
-        input.retain(|c| c != '\n');
-        return input;
-    }
-    println!("Please make sure your name is valid utf-16.");
-    return acquire_campaign_name();
-}
-
 /// Clear terminal screen and print title
 fn clear_and_title(terminal: &crossterm::Terminal) {
     terminal.clear(ClearType::All);
@@ -85,16 +73,6 @@ fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
     println!("Valid Campaign information submitted. This campaign is now being tracked:\n");
     camp.print_info();
 
-}
-
-/// Back Campaign
-fn back_campaign (c: Box<CrowdfundingCampaign>, terminal: &crossterm::Terminal, api_key: &String) {
-        c.print_info();
-        let back_amount = query_amount();
-        clear_and_title(&terminal);
-        let backed_camp = c.back_campaign(&api_key, back_amount);
-        clear_and_title(&terminal);
-        backed_camp.print_info();
 }
 
 /// Asks user for an amount
@@ -179,7 +157,12 @@ pub fn main() {
         let text = "back".to_string();
         let camp = choose_local_campaign(&text);
         clear_and_title(&terminal);
-        back_campaign(camp, &terminal, &api_key);
+        camp.print_info();
+        let back_amount = query_amount();
+        clear_and_title(&terminal);
+        let backed_camp = camp.back_campaign(&api_key, back_amount);
+        clear_and_title(&terminal);
+        backed_camp.print_info();
     }
 }
 
