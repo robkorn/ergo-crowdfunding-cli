@@ -99,11 +99,10 @@ pub fn get_p2s_address(api_key: &String, campaign: &Campaign,  backer_address: &
 }
 
 /// Send payment from unlocked wallet to given address via local node api. Returns the box identifier.
-pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> Option<BackingTx> {
+pub fn send_wallet_payment(api_key: &String, address: &String, amount: f64) -> Option<BackingTx> {
     let json_body = json!({ "address": address,
                             "value": erg_to_nanoerg(amount) });
     let reg = Handlebars::new();
-
     let pb = reg.render_template(SEND_PAYMENT_TEMPLATE, &json_body).ok()?;
     let endpoint = get_node_ip() + "/wallet/payment/send";
     let client = reqwest::Client::new();
@@ -126,9 +125,9 @@ pub fn send_wallet_payment(api_key: &String, address: &String, amount: u64) -> O
     return Some(BackingTx::new(tx_id, amount));
 }
 
-/// Convert from whole erg to nano_erg
-pub fn erg_to_nanoerg(erg_amount: u64) -> u64 {
-    erg_amount * 1000000000
+/// Convert from Erg to nanoErg
+pub fn erg_to_nanoerg(erg_amount: f64) -> u64 {
+    (erg_amount * 1000000000 as f64) as u64
 }
 
 
@@ -138,7 +137,11 @@ mod tests {
 
     #[test]
     fn erg_conv_is_valid() {
-        assert_eq!(1000000000, erg_to_nanoerg(1));
-        assert_eq!(15000000000, erg_to_nanoerg(15));
+        assert_eq!(1000000000, erg_to_nanoerg(1 as f64));
+        assert_eq!(erg_to_nanoerg(3.64), 3640000000);
+        assert_eq!(erg_to_nanoerg(0.64), 640000000);
+        assert_eq!(erg_to_nanoerg(0.0064), 6400000);
+        assert_eq!(erg_to_nanoerg(0.000000064), 64);
+        assert_eq!(erg_to_nanoerg(0.000000001), 1);
     }
 }

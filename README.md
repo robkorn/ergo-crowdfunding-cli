@@ -61,7 +61,7 @@ Ergo Crowdfund CLI
 Which campaign would you like to select?
 ```
 
-Then afterwards how many Erg you wish to send. 
+Then afterwards how many Erg you wish to send. (Now supports backing with decimal amounts of Erg)
 
 Once that is all submitted then the Crowdfund tool will then do the rest to back the Campaign. It fills in the Crowdfund script for you, generates the P2S Address via a POST to your running & unlocked node/wallet, and then submits the transaction to the P2S Address thusly participating and backing the campaign. If successful you will see something similar to the information below:
 
@@ -105,7 +105,6 @@ This information is then saved locally and is available at any time by calling `
 
 ### Notes
 
- - Currently a backer may only send whole integer value amounts of Erg to a campaign.
  - Currently there is no interface for a creator of a Campaign to check if it has succeeded nor collect all of the funds upon success
 
 More features/updates are to come, especially when [EIP-1](https://github.com/ergoplatform/eips/blob/master/eip-0001.md) is finished.

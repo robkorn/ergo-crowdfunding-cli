@@ -76,19 +76,19 @@ fn track_campaign(camp: &Campaign, terminal: &crossterm::Terminal) {
 }
 
 /// Asks user for an amount
-fn query_amount() -> u64 {
-    println!("\nHow many Erg do you want to send to this campaign? (Only whole number values for now)");
+fn query_amount() -> f64 {
+    println!("\nHow many Erg do you want to send to this campaign?");
     let mut input = String::new();
     if let Ok(_) = std::io::stdin().read_line(&mut input){
-        if let Ok(input_n) = input.trim().parse::<u64>(){
-            if input_n < 1 {
-                println!("Please input a whole number greater than 0.");
+        if let Ok(input_n) = input.trim().parse::<f64>(){
+            if input_n < 0 as f64 {
+                println!("Please input a valid number greater than 0.");
                 return query_amount();
             }
             return input_n;
         }
     }
-    return 0;
+    return 0 as f64;
 }
 
 pub fn main() {

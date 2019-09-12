@@ -13,7 +13,7 @@ pub static EXPORT_FOLDER : &'static str = "export/";
 
 
 pub trait CrowdfundingCampaign {
-    fn back_campaign(&self, api_key: &String, amount: u64) -> BackedCampaign;
+    fn back_campaign(&self, api_key: &String, amount: f64) -> BackedCampaign;
     fn build_script(&self, backer_address: &String) -> String;
     fn export(&self);
     fn delete(&self);
@@ -45,7 +45,7 @@ pub struct BackedCampaign {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BackingTx {
     pub tx_id: String,
-    pub backed_amount: u64
+    pub backed_amount: f64
 }
 
 impl Campaign {
@@ -125,7 +125,7 @@ impl CrowdfundingCampaign for Campaign {
     }
 
     /// Allows the user to back the Campaign
-    fn back_campaign(&self, api_key: &String, amount: u64) -> BackedCampaign {
+    fn back_campaign(&self, api_key: &String, amount: f64) -> BackedCampaign {
         let backer_address = select_wallet_address(&api_key);
         let p2s_address = get_p2s_address(&api_key, &self, &backer_address);
         let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
@@ -189,7 +189,7 @@ impl CrowdfundingCampaign for BackedCampaign {
     }
 
     // Allow the backer to back the same Campaign again. Creates a new `BackedCampaign` with the new `BackingTx` produced from the new `send_wallet_payment()` added to `backer_txs` vector.
-    fn back_campaign(&self, api_key: &String, amount: u64) -> BackedCampaign {
+    fn back_campaign(&self, api_key: &String, amount: f64) -> BackedCampaign {
         let backer_address = select_wallet_address(&api_key);
         let p2s_address = get_p2s_address(&api_key, &self.campaign, &backer_address);
         let backing_tx = send_wallet_payment(&api_key, &p2s_address, amount);
@@ -216,7 +216,7 @@ impl CrowdfundingCampaign for BackedCampaign {
 }
 
 impl BackingTx {
-    pub fn new(tx_id: String, backed_amount: u64) -> BackingTx {
+    pub fn new(tx_id: String, backed_amount: f64) -> BackingTx {
         BackingTx {tx_id: tx_id, backed_amount: backed_amount}
     }
 }
