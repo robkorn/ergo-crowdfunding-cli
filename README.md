@@ -82,7 +82,9 @@ This information is then saved locally and is available at any time by calling `
 
 ## Get the Ergo Crowdfunding CLI Tool
 
-The easiest way to get started is to hop on over to [releases](https://github.com/robkorn/ergo-crowdfunding-cli/releases) and download the precompiled binary for your platform. Currently releases target:
+The easiest way to get started is to hop on over to [releases](https://github.com/robkorn/ergo-crowdfunding-cli/releases) and download the precompiled binary for your platform. 
+
+Current release targets:
 - Windows
 - Linux x86
 - Linux ARM
