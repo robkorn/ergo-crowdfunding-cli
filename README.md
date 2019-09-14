@@ -80,8 +80,18 @@ Backing Txs:
 
 This information is then saved locally and is available at any time by calling `info` and selecting the campaign.
 
+## Get the Ergo Crowdfunding CLI Tool
 
-## Setup
+The easiest way to get started is to hop on over to [releases](https://github.com/robkorn/ergo-crowdfunding-cli/releases) and download the precompiled binary for your platform. Currently releases target:
+- Windows
+- Linux x86
+- Linux ARM
+
+If you wish to use the tool and are not on one of the platforms listed above, please feel free to compile it yourself with the instructions below.
+
+Make sure to save and keep the binary in a single folder as it saves data locally in the same folder it is kept in.
+
+## Compiling It Yourself
 
  1. Install latest Rust stable by going to: https://www.rust-lang.org/learn/get-started
  2. Clone the repository via 
